@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Bell,
     Terminal,
@@ -48,34 +48,22 @@ const CARD_IMAGES = [
 const GAME_LINK = "https://www.roblox.com/games/127198433562944/Coruscant-Roleplay";
 const GROUP_LINK = "https://www.roblox.com/communities/866453521/Star-Wars-Roleplay";
 
-export default function App() {
-    const [factions, setFactions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedFaction, setSelectedFaction] = useState(null);
+const FACTIONS = [
+    { id: 'rg', name: "Red Guards", members: 17, type: "Elite Guard", code: "AX-01", groupId: '734074037', description: "The elite protectors of the Supreme Chancellor and the Senate. Clad in distinctive red armor, they are the most loyal and lethal guards in the Republic.", gamepassLink: null },
+    { id: '41st', name: "41st Elite Corps", members: 13, type: "Infantry", code: "INF-41", groupId: '353784713', description: "Specialized in long-range operations and planetary scouting. Known for their camouflage armor and expertise in harsh environments like Kashyyyk.", gamepassLink: null },
+    { id: 'rc', name: "Rep. Commandos", members: 22, type: "Special Forces", code: "SPEC-RC", groupId: '1085075157', description: "Elite special forces units operating in four-man squads. They handle the most dangerous covert operations, sabotage, and assassination missions.", gamepassLink: null },
+    { id: 'arc', name: "Advanced Recon", members: 12, type: "Reconnaissance", code: "RCN-A", groupId: '848398756', description: "Highly independent ARC Troopers trained for complex reconnaissance and unconventional warfare. They operate with high autonomy.", gamepassLink: null },
+    { id: '401st', name: "Coruscant Guards", members: 12, type: "Security", code: "SEC-401", groupId: '445428424', description: "The military police and security force for the capital planet. They maintain order, protect government installations, and handle prisoner transport.", gamepassLink: "https://www.roblox.com/game-pass/1747600338/[TEAM]-Coruscant-Guard" },
+    { id: 'cadet', name: "Cadet Academy", members: 3, type: "Training", code: "TRN-00", groupId: '880407964', description: "The training ground for the next generation of clones. Cadets undergo rigorous combat and tactical training before deployment.", gamepassLink: null },
+    { id: 'senate', name: "Galactic Senate", members: 3, type: "Government", code: "GOV-01", groupId: '1109103792', description: "The political heart of the Republic. Senators and representatives debate policy, while security forces ensure their safety.", gamepassLink: null },
+    { id: '91st', name: "91st Mobile Recon", members: 6, type: "Reconnaissance", code: "RCN-91", groupId: '139410049', description: "A highly mobile reconnaissance unit specialized in speeder bike operations and rapid deployment behind enemy lines.", gamepassLink: null },
+    { id: 'riia', name: "Rep. Intelligence", members: 9, type: "Intelligence", code: "INT-R", groupId: '645269431', description: "The covert branch handling espionage, code-breaking, and counter-intelligence to protect Republic secrets.", gamepassLink: null },
+    { id: 'sg', name: "Senate Guards", members: 5, type: "Elite Guard", code: "AX-02", groupId: '602172556', description: "The traditional security force of the Senate Plaza. They wear blue robes and carry non-lethal weapons for crowd control.", gamepassLink: null },
+    { id: '212th', name: "212th Attack Bat.", members: 19, type: "Assault", code: "AST-212", groupId: '354790445', description: "An elite assault unit known for siege operations and heavy combat. Led by Commander Cody and General Kenobi.", gamepassLink: "https://www.roblox.com/game-pass/1747544350/[TEAM]-212th-Attack-Battalion" },
+];
 
-    useEffect(() => {
-        // In a containerized environment, this URL might need to be configurable.
-        // For now, using relative path or placeholder.
-        // If frontend and backend are served on same host, relative path works.
-        // If separate, we need the full URL.
-        // Let's use relative path assuming a reverse proxy or same origin in production.
-        // Or keep localhost for now if that's what the user expects for testing.
-        // Let's use a fallback or env variable if possible, but hardcoding localhost is what we had.
-        // Let's use relative path `/api/v1/factions` as it's best practice for containers behind a proxy!
-        // But for local dev with Vite dev server and Express separate, it needs a proxy or full URL.
-        // Vite has a proxy feature.
-        // Let's use the full URL for now to keep it working as it was, and I'll mention it.
-        fetch('http://localhost:5000/api/v1/factions')
-            .then(res => res.json())
-            .then(data => {
-                setFactions(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Error fetching factions:', err);
-                setLoading(false);
-            });
-    }, []);
+export default function App() {
+    const [selectedFaction, setSelectedFaction] = useState(null);
 
     return (
         <div className="min-h-screen flex flex-col bg-[#0A0A0A] text-white selection:bg-[#8b1919] selection:text-white antialiased font-inter">
@@ -170,57 +158,53 @@ export default function App() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {loading ? (
-                            <div className="text-white font-mono">Loading data...</div>
-                        ) : (
-                            factions.map((faction, index) => {
-                                const FactionIcon = ICON_MAP[faction.id] || Shield;
-                                return (
-                                    <div
-                                        key={faction.id}
-                                        className="group relative bg-[#121212] border border-white/10 overflow-hidden transition-all duration-300 hover:border-white/50 flex flex-col h-full cursor-pointer"
-                                        onClick={() => setSelectedFaction(faction)}
-                                    >
+                        {FACTIONS.map((faction, index) => {
+                            const FactionIcon = ICON_MAP[faction.id] || Shield;
+                            return (
+                                <div
+                                    key={faction.id}
+                                    className="group relative bg-[#121212] border border-white/10 overflow-hidden transition-all duration-300 hover:border-white/50 flex flex-col h-full cursor-pointer"
+                                    onClick={() => setSelectedFaction(faction)}
+                                >
 
-                                        {/* Corner Brackets (Hover) */}
-                                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white opacity-0 group-hover:opacity-100 transition-opacity z-20 m-2"></div>
-                                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white opacity-0 group-hover:opacity-100 transition-opacity z-20 m-2"></div>
+                                    {/* Corner Brackets (Hover) */}
+                                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white opacity-0 group-hover:opacity-100 transition-opacity z-20 m-2"></div>
+                                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white opacity-0 group-hover:opacity-100 transition-opacity z-20 m-2"></div>
 
-                                        {/* Image Area */}
-                                        <div className="relative h-64 w-full overflow-hidden border-b border-white/10">
-                                            <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/50 to-transparent z-10 h-full bottom-0"></div>
-                                            <img
-                                                alt={faction.name}
-                                                className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 scale-105 group-hover:scale-100"
-                                                src={CARD_IMAGES[index % CARD_IMAGES.length]}
-                                            />
-                                            <div className="absolute top-4 right-4 z-20 text-white/20 group-hover:text-white/80 transition-colors duration-500">
-                                                <FactionIcon className="w-8 h-8" strokeWidth={1.5} />
-                                            </div>
+                                    {/* Image Area */}
+                                    <div className="relative h-64 w-full overflow-hidden border-b border-white/10">
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/50 to-transparent z-10 h-full bottom-0"></div>
+                                        <img
+                                            alt={faction.name}
+                                            className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 scale-105 group-hover:scale-100"
+                                            src={CARD_IMAGES[index % CARD_IMAGES.length]}
+                                        />
+                                        <div className="absolute top-4 right-4 z-20 text-white/20 group-hover:text-white/80 transition-colors duration-500">
+                                            <FactionIcon className="w-8 h-8" strokeWidth={1.5} />
                                         </div>
-
-                                        {/* Content Area */}
-                                        <div className="p-6 flex flex-col flex-grow justify-between gap-6 relative z-20 bg-[#121212]">
-                                            <div>
-                                                <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
-                                                    <span className="w-2 h-2 bg-[#8b1919]"></span>
-                                                    CLASS {faction.code}
-                                                </div>
-                                                <h3 className="text-[24px] text-white font-bold uppercase leading-tight group-hover:text-[#8b1919] transition-colors pr-4">
-                                                    {faction.name}
-                                                </h3>
-                                            </div>
-
-                                            <div className="flex justify-between items-end border-t border-white/10 pt-4 mt-auto">
-                                                <span className="font-mono text-[12px] font-medium text-[#c4c7c8] uppercase tracking-[0.15em]">STRENGTH</span>
-                                                <span className="font-mono text-[14px] text-white">{faction.members.toLocaleString()} Units</span>
-                                            </div>
-                                        </div>
-
                                     </div>
-                                );
-                            })
-                        )}
+
+                                    {/* Content Area */}
+                                    <div className="p-6 flex flex-col flex-grow justify-between gap-6 relative z-20 bg-[#121212]">
+                                        <div>
+                                            <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+                                                <span className="w-2 h-2 bg-[#8b1919]"></span>
+                                                CLASS {faction.code}
+                                            </div>
+                                            <h3 className="text-[24px] text-white font-bold uppercase leading-tight group-hover:text-[#8b1919] transition-colors pr-4">
+                                                {faction.name}
+                                                </h3>
+                                        </div>
+
+                                        <div className="flex justify-between items-end border-t border-white/10 pt-4 mt-auto">
+                                            <span className="font-mono text-[12px] font-medium text-[#c4c7c8] uppercase tracking-[0.15em]">STRENGTH</span>
+                                            <span className="font-mono text-[14px] text-white">{faction.members.toLocaleString()} Units</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            );
+                        })}
                     </div>
                 </section>
             </main>
