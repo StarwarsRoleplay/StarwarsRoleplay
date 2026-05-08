@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -36,3 +36,41 @@ jobs:
     - name: Build Frontend
       run: npm run build
       working-directory: frontend
+
+  build-and-push-images:
+    needs: [backend-test, frontend-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set lowercase repository name
+      run: |
+        echo "REPO_LOWERCASE=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Backend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: true
+        tags: |
+          ghcr.io/${{ env.REPO_LOWERCASE }}/backend:latest
+          ghcr.io/${{ env.REPO_LOWERCASE }}/backend:${{ github.sha }}
+
+    - name: Build and push Frontend image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: |
+          ghcr.io/${{ env.REPO_LOWERCASE }}/frontend:latest
+          ghcr.io/${{ env.REPO_LOWERCASE }}/frontend:${{ github.sha }}

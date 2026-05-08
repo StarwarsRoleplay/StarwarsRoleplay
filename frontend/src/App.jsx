@@ -54,6 +54,17 @@ export default function App() {
     const [selectedFaction, setSelectedFaction] = useState(null);
 
     useEffect(() => {
+        // In a containerized environment, this URL might need to be configurable.
+        // For now, using relative path or placeholder.
+        // If frontend and backend are served on same host, relative path works.
+        // If separate, we need the full URL.
+        // Let's use relative path assuming a reverse proxy or same origin in production.
+        // Or keep localhost for now if that's what the user expects for testing.
+        // Let's use a fallback or env variable if possible, but hardcoding localhost is what we had.
+        // Let's use relative path `/api/v1/factions` as it's best practice for containers behind a proxy!
+        // But for local dev with Vite dev server and Express separate, it needs a proxy or full URL.
+        // Vite has a proxy feature.
+        // Let's use the full URL for now to keep it working as it was, and I'll mention it.
         fetch('http://localhost:5000/api/v1/factions')
             .then(res => res.json())
             .then(data => {
