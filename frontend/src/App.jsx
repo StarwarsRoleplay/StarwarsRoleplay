@@ -1,25 +1,23 @@
 import React, { useState } from 'react';
 import {
-    Bell,
-    Terminal,
-    ArrowRight,
     Shield,
     Crosshair,
-    Users,
+    Terminal as TerminalIcon,
     Swords,
     Landmark,
     Star,
     Activity,
     Fingerprint,
     Compass,
-    X
+    X,
+    ArrowRight
 } from 'lucide-react';
 
 // --- ICON MAPPING ---
 const ICON_MAP = {
     rg: Shield,
     '41st': Compass,
-    rc: Terminal,
+    rc: TerminalIcon,
     arc: Activity,
     '401st': Crosshair,
     cadet: Star,
@@ -47,6 +45,7 @@ const CARD_IMAGES = [
 
 const GAME_LINK = "https://www.roblox.com/games/127198433562944/Coruscant-Roleplay";
 const GROUP_LINK = "https://www.roblox.com/communities/866453521/Star-Wars-Roleplay";
+const DISCORD_LINK = "https://discord.gg/46nvXHe8Ax";
 
 const FACTIONS = [
     { id: 'rg', name: "Red Guards", members: 17, type: "Elite Guard", code: "AX-01", groupId: '734074037', description: "The elite protectors of the Supreme Chancellor and the Senate. Clad in distinctive red armor, they are the most loyal and lethal guards in the Republic.", gamepassLink: null },
@@ -64,6 +63,7 @@ const FACTIONS = [
 
 export default function App() {
     const [selectedFaction, setSelectedFaction] = useState(null);
+    const [showDiscordModal, setShowDiscordModal] = useState(false);
 
     return (
         <div className="min-h-screen flex flex-col bg-[#0A0A0A] text-white selection:bg-[#8b1919] selection:text-white antialiased font-inter">
@@ -78,18 +78,15 @@ export default function App() {
                     <nav className="hidden md:flex gap-8 items-center font-mono text-[12px] uppercase tracking-[0.15em] font-medium text-[#c4c7c8]">
                         <a className="text-white border-b-2 border-[#8b1919] pb-1 hover:text-white hover:bg-white/5 transition-colors" href="#">Hangar</a>
                         <a className="hover:text-white hover:bg-white/5 transition-colors pb-1" href="#divisions">Divisions</a>
-                        <a className="hover:text-white hover:bg-white/5 transition-colors pb-1" href={GROUP_LINK} target="_blank" rel="noreferrer">Commnet</a>
+                        <button 
+                            className="hover:text-white hover:bg-white/5 transition-colors pb-1 uppercase" 
+                            onClick={() => setShowDiscordModal(true)}
+                        >
+                            Commnet
+                        </button>
                     </nav>
 
                     <div className="flex items-center gap-4">
-                        <div className="hidden md:flex gap-4 text-[#c4c7c8]">
-                            <button className="hover:text-white transition-colors flex items-center justify-center p-2">
-                                <Bell className="w-5 h-5" />
-                            </button>
-                            <button className="hover:text-white transition-colors flex items-center justify-center p-2">
-                                <Terminal className="w-5 h-5" />
-                            </button>
-                        </div>
                         <a
                             href={GAME_LINK}
                             target="_blank"
@@ -193,7 +190,7 @@ export default function App() {
                                             </div>
                                             <h3 className="text-[24px] text-white font-bold uppercase leading-tight group-hover:text-[#8b1919] transition-colors pr-4">
                                                 {faction.name}
-                                                </h3>
+                                            </h3>
                                         </div>
 
                                         <div className="flex justify-between items-end border-t border-white/10 pt-4 mt-auto">
@@ -209,7 +206,7 @@ export default function App() {
                 </section>
             </main>
 
-            {/* Modal */}
+            {/* Faction Modal */}
             {selectedFaction && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-[#121212] border border-white/10 max-w-2xl w-full relative overflow-hidden">
@@ -276,6 +273,58 @@ export default function App() {
                                 )}
                                 <button
                                     onClick={() => setSelectedFaction(null)}
+                                    className="bg-transparent border border-white/20 text-white font-mono text-[12px] font-medium px-8 py-4 uppercase tracking-[0.15em] hover:bg-white/5 transition-all duration-300 w-full"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Discord Modal */}
+            {showDiscordModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#121212] border border-white/10 max-w-2xl w-full relative overflow-hidden">
+                        {/* Corner Brackets */}
+                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white m-2"></div>
+                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white m-2"></div>
+
+                        <button
+                            className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+                            onClick={() => setShowDiscordModal(false)}
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+
+                        <div className="p-8 flex flex-col gap-6">
+                            <div>
+                                <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-[#8b1919]"></span>
+                                    COMMUNICATION HUB
+                                </div>
+                                <h2 className="text-[32px] text-white font-bold uppercase leading-tight">
+                                    Join the Holonet
+                                </h2>
+                            </div>
+
+                            <div className="font-mono text-[14px] text-[#c4c7c8] border-l-2 border-[#8b1919] pl-4 py-1 leading-[20px]">
+                                Connect with the community, receive deployment orders, and participate in events. Our main communication hub is hosted on Discord.
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                                <a
+                                    href={DISCORD_LINK}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="bg-white text-[#0A0A0A] font-mono text-[12px] font-medium px-8 py-4 uppercase tracking-[0.15em] hover:bg-[#5865F2] hover:text-white transition-all duration-300 w-full flex items-center justify-center gap-2 group"
+                                >
+                                    Join Discord
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                </a>
+                                <button
+                                    onClick={() => setShowDiscordModal(false)}
                                     className="bg-transparent border border-white/20 text-white font-mono text-[12px] font-medium px-8 py-4 uppercase tracking-[0.15em] hover:bg-white/5 transition-all duration-300 w-full"
                                 >
                                     Close
