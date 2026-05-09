@@ -23,6 +23,15 @@ export default function App() {
     const [user, setUser] = React.useState(null);
 
     React.useEffect(() => {
+        // Check for OAuth code in URL (GitHub Pages fallback)
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (code) {
+            // Redirect to the hash route
+            window.location.href = `https://swrp.me/#/login?code=${code}`;
+            return;
+        }
+
         const token = localStorage.getItem('swrp_token');
         if (token) {
             try {
