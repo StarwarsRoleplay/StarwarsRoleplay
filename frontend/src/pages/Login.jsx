@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const CLIENT_ID = "4826975489404838124";
-const REDIRECT_URI = "https://swrp.me/";
+const REDIRECT_URI = "https://swrp.me/login";
 
 export default function Login() {
     const location = useLocation();

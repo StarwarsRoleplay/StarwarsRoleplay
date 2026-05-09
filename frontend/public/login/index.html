@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Logging in...</title>
+    <script type="text/javascript">
+      // Get query params
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      
+      if (code) {
+        // Redirect to the hash route
+        window.location.href = `https://swrp.me/#/login?code=${code}&state=${state}`;
+      } else {
+        // Fallback or error
+        document.body.innerHTML = "<h1>Login failed</h1><p>No code received.</p>";
+      }
+    </script>
+    <style>
+      body {
+        background-color: #050505;
+        color: #white;
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .box {
+        background-color: #0a0a0a;
+        border: 1px solid #8b1919;
+        padding: 2rem;
+        text-align: center;
+        max-width: 400px;
+        box-shadow: 0 0 20px rgba(139, 25, 25, 0.2);
+      }
+      h1 {
+        color: #fff;
+        font-size: 1.5rem;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        letter-spacing: 0.1em;
+      }
+      p {
+        color: #888;
+        font-size: 0.875rem;
+      }
+      .spinner {
+        border: 2px solid #8b1919;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        margin: 1rem auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <h1>Imperial Database</h1>
+      <div class="spinner"></div>
+      <p>Processing authorization code...</p>
+      <p style="font-size: 0.75rem; color: #555;">Please wait while we redirect you to the secure terminal.</p>
+    </div>
+  </body>
+</html>
