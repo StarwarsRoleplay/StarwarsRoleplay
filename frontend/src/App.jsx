@@ -12,6 +12,7 @@ import Holonet from './pages/Holonet';
 import Privacy from './pages/Privacy';
 import Legal from './pages/Legal';
 import Terms from './pages/Terms';
+import Lore from './pages/Lore';
 import { GAME_LINK } from './constants';
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
                         <Route path="/privacy" element={<Privacy />} />
                         <Route path="/legal" element={<Legal />} />
                         <Route path="/terms" element={<Terms />} />
+                        <Route path="/lore" element={<Lore />} />
                     </Routes>
                 </main>
 

@@ -12,6 +12,7 @@ export default function Navigation() {
         <nav className="hidden md:flex gap-8 items-center font-mono text-[12px] uppercase tracking-[0.15em] font-medium text-[#c4c7c8]">
             <Link className={isActive('/')} to="/">Hangar</Link>
             <Link className={isActive('/divisions')} to="/divisions">Divisions</Link>
+            <Link className={isActive('/lore')} to="/lore">Lore</Link>
             <Link className={isActive('/holonet')} to="/holonet">Holonet</Link>
         </nav>
     );
