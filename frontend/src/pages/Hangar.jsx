@@ -1,8 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GAME_LINK, GROUP_LINK } from '../constants';
 
 export default function Hangar() {
+    const items = [
+        {
+            type: "NEWS",
+            title: "Sector 4 Update",
+            desc: "New security protocols active. Check your clearance level.",
+            image: "[ TRANSMISSION IMAGE ]"
+        },
+        {
+            type: "STORE",
+            title: "DC-15A Blaster",
+            desc: "Standard issue rifle now available for all recruits.",
+            image: "[ EQUIPMENT IMAGE ]"
+        },
+        {
+            type: "EVENT",
+            title: "Citadel Operation",
+            desc: "Join the joint operation this weekend at 18:00 EST.",
+            image: "[ EVENT IMAGE ]"
+        }
+    ];
+
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveIndex((current) => (current + 1) % items.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [items.length]);
+
     return (
         <section className="relative w-full h-[85vh] flex items-center bg-venator border-b border-white/10">
             <div className="w-full max-w-[1440px] mx-auto px-6 md:px-16 relative z-10 grid grid-cols-12 gap-6">
@@ -46,34 +76,36 @@ export default function Hangar() {
                         Recommended
                     </h3>
                     
-                    {/* Netflix-like list */}
-                    <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-                        {/* Item 1 */}
-                        <div className="group relative flex flex-col gap-2 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-300 p-3 cursor-pointer">
-                            <div className="aspect-video bg-[#202020] overflow-hidden">
+                    {/* Auto-switching featured item */}
+                    <div className="group relative flex flex-col gap-4 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-500 p-4 cursor-pointer h-full justify-between">
+                        <div className="flex flex-col gap-2">
+                            <div className="aspect-video bg-[#202020] overflow-hidden relative">
                                 <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
-                                    [ TRANSMISSION IMAGE ]
+                                    {items[activeIndex].image}
+                                </div>
+                                <div className="absolute top-2 left-2 bg-[#8b1919] text-white font-mono text-[10px] px-2 py-1">
+                                    {items[activeIndex].type}
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="font-mono text-[10px] text-[#8b1919]">NEWS</span>
-                                <h4 className="text-sm text-white font-bold group-hover:text-[#8b1919] transition-colors">Sector 4 Update</h4>
-                                <p className="text-xs text-zinc-500 line-clamp-2">New security protocols active. Check your clearance level.</p>
+                            <div className="flex flex-col gap-1 mt-2">
+                                <h4 className="text-lg text-white font-bold group-hover:text-[#8b1919] transition-colors duration-300">
+                                    {items[activeIndex].title}
+                                </h4>
+                                <p className="text-sm text-zinc-400 line-clamp-3">
+                                    {items[activeIndex].desc}
+                                </p>
                             </div>
                         </div>
-                        
-                        {/* Item 2 */}
-                        <div className="group relative flex flex-col gap-2 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-300 p-3 cursor-pointer">
-                            <div className="aspect-video bg-[#202020] overflow-hidden">
-                                <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
-                                    [ EQUIPMENT IMAGE ]
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="font-mono text-[10px] text-[#8b1919]">STORE</span>
-                                <h4 className="text-sm text-white font-bold group-hover:text-[#8b1919] transition-colors">DC-15A Blaster</h4>
-                                <p className="text-xs text-zinc-500 line-clamp-2">Standard issue rifle now available for all recruits.</p>
-                            </div>
+
+                        {/* Indicators */}
+                        <div className="flex gap-2 justify-center mt-auto">
+                            {items.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
+                                    className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-[#8b1919] w-4' : 'bg-zinc-700 hover:bg-zinc-500'}`}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
