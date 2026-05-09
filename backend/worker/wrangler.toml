@@ -10,6 +10,7 @@ database_id = "445da21d-ecea-452e-8c43-6c355547695b"
 [vars]
 ROBLOX_CLIENT_ID = "4826975489404838124"
 
-[[kv_namespaces]]
+[[d1_databases]]
 binding = "RECOMMENDED"
-id = "9d031406-b17b-4d8a-9264-85f68f40f2a5"
+database_name = "swrp-recommended"
+database_id = "9d031406-b17b-4d8a-9264-85f68f40f2a5"

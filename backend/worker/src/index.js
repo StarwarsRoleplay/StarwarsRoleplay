@@ -707,10 +707,17 @@ export default {
             headers.set('Content-Type', 'application/json');
 
             try {
+                // Ensure table exists
+                await env.RECOMMENDED.prepare(
+                    "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)"
+                ).run();
+
                 // GET: Fetch recommended items
                 if (request.method === 'GET') {
-                    const items = await env.RECOMMENDED.get('items');
-                    return new Response(items || '[]', { headers });
+                    const result = await env.RECOMMENDED.prepare(
+                        "SELECT value FROM settings WHERE key = 'recommended_items'"
+                    ).first();
+                    return new Response(result ? result.value : '[]', { headers });
                 }
 
                 // POST: Update recommended items
@@ -726,7 +733,9 @@ export default {
 
                     try {
                         const data = await request.json();
-                        await env.RECOMMENDED.put('items', JSON.stringify(data));
+                        await env.RECOMMENDED.prepare(
+                            "INSERT OR REPLACE INTO settings (key, value) VALUES ('recommended_items', ?)"
+                        ).bind(JSON.stringify(data)).run();
                         return new Response(JSON.stringify({ success: true }), { headers });
                     } catch (error) {
                         return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
