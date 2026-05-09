@@ -718,7 +718,30 @@ export default {
         try {
             // GET: Fetch recommended items
             if (request.method === 'GET') {
-                return new Response(JSON.stringify([{ type: 'news', title: 'Hardcoded Test', desc: 'If you see this, D1 was the issue' }]), { headers });
+                try {
+                    const result = await env.RECOMMENDED.prepare(
+                        "SELECT value FROM settings WHERE key = 'recommended_items'"
+                    ).first();
+                    
+                    let items = [];
+                    if (result && result.value) {
+                        items = JSON.parse(result.value);
+                    }
+                    
+                    // Filter out expired items
+                    const now = Date.now();
+                    items = items.filter(item => {
+                        if (item.expiresAt) {
+                            return new Date(item.expiresAt).getTime() > now;
+                        }
+                        return true; // No expiration set
+                    });
+                    
+                    return new Response(JSON.stringify(items), { headers });
+                } catch (error) {
+                    console.error('Failed to fetch from D1:', error);
+                    return new Response(JSON.stringify([]), { headers });
+                }
             }
 
             // POST: Update recommended items

@@ -10,7 +10,8 @@ export default function RecommendedAdmin() {
         type: 'NEWS',
         title: '',
         desc: '',
-        image: '[ IMAGE ]'
+        image: '[ IMAGE ]',
+        expiresAt: ''
     });
     const [actionLoading, setActionLoading] = useState(false);
 
@@ -59,7 +60,7 @@ export default function RecommendedAdmin() {
     const handleAddItem = (e) => {
         e.preventDefault();
         setItems([...items, newItem]);
-        setNewItem({ type: 'NEWS', title: '', desc: '', image: '[ IMAGE ]' });
+        setNewItem({ type: 'NEWS', title: '', desc: '', image: '[ IMAGE ]', expiresAt: '' });
     };
 
     const handleDeleteItem = (index) => {
@@ -137,6 +138,15 @@ export default function RecommendedAdmin() {
                         required
                     />
                 </div>
+                <div className="flex flex-col gap-1">
+                    <label className="text-xs text-zinc-500 font-mono">EXPIRES AT (OPTIONAL)</label>
+                    <input 
+                        type="datetime-local"
+                        value={newItem.expiresAt || ''}
+                        onChange={(e) => setNewItem({...newItem, expiresAt: e.target.value})}
+                        className="bg-[#151515] border border-white/5 text-white p-2 font-mono text-sm"
+                    />
+                </div>
                 <button 
                     type="submit"
                     className="bg-white text-[#0A0A0A] font-mono text-[12px] font-medium px-4 py-2 uppercase tracking-[0.15em] hover:bg-[#8b1919] hover:text-white transition-all duration-300 w-fit"
@@ -146,9 +156,10 @@ export default function RecommendedAdmin() {
             </form>
 
             {/* List of Items */}
-            <div className="flex flex-col gap-4">
-                <h3 className="text-lg text-white font-bold uppercase">Current Items</h3>
-                {items.map((item, index) => (
+            {items.length > 0 && (
+                <div className="flex flex-col gap-4">
+                    <h3 className="text-lg text-white font-bold uppercase">Current Items</h3>
+                    {items.map((item, index) => (
                     <div key={index} className="bg-[#0a0a0a] border border-white/5 p-6 flex flex-col gap-4">
                         <div className="flex justify-between items-center">
                             <span className="font-mono text-xs text-[#8b1919]">{item.type}</span>
@@ -188,9 +199,19 @@ export default function RecommendedAdmin() {
                                 className="bg-[#151515] border border-white/5 text-white p-2 font-mono text-sm"
                             />
                         </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs text-zinc-500 font-mono">EXPIRES AT (OPTIONAL)</label>
+                            <input 
+                                type="datetime-local"
+                                value={item.expiresAt || ''}
+                                onChange={(e) => handleItemChange(index, 'expiresAt', e.target.value)}
+                                className="bg-[#151515] border border-white/5 text-white p-2 font-mono text-sm"
+                            />
+                        </div>
                     </div>
                 ))}
-            </div>
+                </div>
+            )}
 
             <button 
                 onClick={handleSave}

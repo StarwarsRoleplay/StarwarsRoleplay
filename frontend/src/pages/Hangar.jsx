@@ -3,26 +3,7 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GAME_LINK, GROUP_LINK } from '../constants';
 
 export default function Hangar() {
-    const [items, setItems] = useState([
-        {
-            type: "NEWS",
-            title: "Sector 4 Update",
-            desc: "New security protocols active. Check your clearance level.",
-            image: "[ TRANSMISSION IMAGE ]"
-        },
-        {
-            type: "STORE",
-            title: "DC-15A Blaster",
-            desc: "Standard issue rifle now available for all recruits.",
-            image: "[ EQUIPMENT IMAGE ]"
-        },
-        {
-            type: "EVENT",
-            title: "Citadel Operation",
-            desc: "Join the joint operation this weekend at 18:00 EST.",
-            image: "[ EVENT IMAGE ]"
-        }
-    ]);
+    const [items, setItems] = useState([]);
 
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -30,7 +11,7 @@ export default function Hangar() {
         fetch('https://swrp.thatzane.workers.dev/api/v1/recommended')
             .then(res => res.json())
             .then(data => {
-                if (data && data.length > 0) {
+                if (data) {
                     setItems(data);
                 }
             })
@@ -38,6 +19,7 @@ export default function Hangar() {
     }, []);
 
     useEffect(() => {
+        if (items.length === 0) return;
         const interval = setInterval(() => {
             setActiveIndex((current) => (current + 1) % items.length);
         }, 5000);
@@ -47,7 +29,7 @@ export default function Hangar() {
     return (
         <section className="relative w-full h-[85vh] flex items-center bg-venator border-b border-white/10">
             <div className="w-full max-w-[1440px] mx-auto px-6 md:px-16 relative z-10 grid grid-cols-12 gap-6">
-                <div className="col-span-12 md:col-span-8 flex flex-col gap-8">
+                <div className={`col-span-12 ${items.length > 0 ? 'md:col-span-8' : ''} flex flex-col gap-8`}>
                     <h1 className="text-4xl sm:text-5xl md:text-[100px] lg:text-[120px] text-white font-black uppercase tracking-[-0.04em] leading-[0.9]">
                         STAR WARS<br />
                         ROLEPLAY
@@ -78,62 +60,64 @@ export default function Hangar() {
                     </div>
                 </div>
                 
-                <div className="col-span-12 md:col-span-4 flex flex-col gap-6 bg-[#0a0a0a]/80 border border-white/10 p-6 backdrop-blur-sm h-[500px]">
-                    <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-[#8b1919] animate-pulse"></span>
-                        INCOMING TRANSMISSIONS
-                    </div>
-                    <h3 className="text-xl text-white font-bold uppercase tracking-wide border-b border-white/10 pb-2">
-                        Recommended
-                    </h3>
-                    
-                    {/* Auto-switching featured item */}
-                    <div className="group relative flex flex-col gap-4 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-500 p-4 cursor-pointer h-full justify-between">
-                        {/* Arrows */}
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveIndex((current) => (current - 1 + items.length) % items.length); }}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 text-white p-2 hover:bg-[#8b1919] transition-colors z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveIndex((current) => (current + 1) % items.length); }}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 text-white p-2 hover:bg-[#8b1919] transition-colors z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        >
-                            <ChevronRight className="w-4 h-4" />
-                        </button>
+                {items.length > 0 && (
+                    <div className="col-span-12 md:col-span-4 flex flex-col gap-6 bg-[#0a0a0a]/80 border border-white/10 p-6 backdrop-blur-sm h-[500px]">
+                        <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+                            <span className="w-2 h-2 bg-[#8b1919] animate-pulse"></span>
+                            INCOMING TRANSMISSIONS
+                        </div>
+                        <h3 className="text-xl text-white font-bold uppercase tracking-wide border-b border-white/10 pb-2">
+                            Recommended
+                        </h3>
+                        
+                        {/* Auto-switching featured item */}
+                        <div className="group relative flex flex-col gap-4 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-500 p-4 cursor-pointer h-full justify-between">
+                            {/* Arrows */}
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setActiveIndex((current) => (current - 1 + items.length) % items.length); }}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 text-white p-2 hover:bg-[#8b1919] transition-colors z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setActiveIndex((current) => (current + 1) % items.length); }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 text-white p-2 hover:bg-[#8b1919] transition-colors z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
 
-                        <div className="flex flex-col gap-2">
-                            <div className="aspect-video bg-[#202020] overflow-hidden relative">
-                                <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
-                                    {items[activeIndex].image}
+                            <div className="flex flex-col gap-2">
+                                <div className="aspect-video bg-[#202020] overflow-hidden relative">
+                                    <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
+                                        {items[activeIndex].image}
+                                    </div>
+                                    <div className="absolute top-2 left-2 bg-[#8b1919] text-white font-mono text-[10px] px-2 py-1">
+                                        {items[activeIndex].type}
+                                    </div>
                                 </div>
-                                <div className="absolute top-2 left-2 bg-[#8b1919] text-white font-mono text-[10px] px-2 py-1">
-                                    {items[activeIndex].type}
+                                <div className="flex flex-col gap-1 mt-2">
+                                    <h4 className="text-lg text-white font-bold group-hover:text-[#8b1919] transition-colors duration-300">
+                                        {items[activeIndex].title}
+                                    </h4>
+                                    <p className="text-sm text-zinc-400 line-clamp-3">
+                                        {items[activeIndex].desc}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-1 mt-2">
-                                <h4 className="text-lg text-white font-bold group-hover:text-[#8b1919] transition-colors duration-300">
-                                    {items[activeIndex].title}
-                                </h4>
-                                <p className="text-sm text-zinc-400 line-clamp-3">
-                                    {items[activeIndex].desc}
-                                </p>
+
+                            {/* Indicators */}
+                            <div className="flex gap-2 justify-center mt-auto">
+                                {items.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
+                                        className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-[#8b1919] w-4' : 'bg-zinc-700 hover:bg-zinc-500'}`}
+                                    />
+                                ))}
                             </div>
                         </div>
-
-                        {/* Indicators */}
-                        <div className="flex gap-2 justify-center mt-auto">
-                            {items.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
-                                    className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-[#8b1919] w-4' : 'bg-zinc-700 hover:bg-zinc-500'}`}
-                                />
-                            ))}
-                        </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Structural HUD Elements */}
