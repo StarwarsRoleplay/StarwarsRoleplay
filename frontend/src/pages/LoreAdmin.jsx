@@ -55,6 +55,7 @@ export default function UserManagement() {
         })
         .then(res => {
             if (res.status === 401) {
+                localStorage.removeItem('swrp_token');
                 navigate('/login');
                 throw new Error('Unauthorized');
             }
@@ -80,12 +81,19 @@ export default function UserManagement() {
                 'Authorization': `Bearer ${token}`
             }
         })
-        .then(res => res.json())
+        .then(res => {
+            if (res.status === 401) {
+                localStorage.removeItem('swrp_token');
+                navigate('/login');
+                throw new Error('Unauthorized');
+            }
+            return res.json();
+        })
         .then(data => {
             setArticles(data);
         })
         .catch(err => console.error('Failed to fetch articles', err));
-    }, [token]);
+    }, [token, navigate]);
 
     useEffect(() => {
         if (!token) {

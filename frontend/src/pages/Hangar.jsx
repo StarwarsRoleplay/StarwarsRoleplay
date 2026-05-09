@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { GAME_LINK, GROUP_LINK } from '../constants';
 
 export default function Hangar() {
-    const items = [
+    const [items, setItems] = useState([
         {
             type: "NEWS",
             title: "Sector 4 Update",
@@ -22,9 +22,20 @@ export default function Hangar() {
             desc: "Join the joint operation this weekend at 18:00 EST.",
             image: "[ EVENT IMAGE ]"
         }
-    ];
+    ]);
 
     const [activeIndex, setActiveIndex] = useState(0);
+
+    useEffect(() => {
+        fetch('https://swrp.thatzane.workers.dev/api/v1/recommended')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    setItems(data);
+                }
+            })
+            .catch(e => console.error('Failed to fetch recommended items', e));
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -78,6 +89,20 @@ export default function Hangar() {
                     
                     {/* Auto-switching featured item */}
                     <div className="group relative flex flex-col gap-4 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-500 p-4 cursor-pointer h-full justify-between">
+                        {/* Arrows */}
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveIndex((current) => (current - 1 + items.length) % items.length); }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 text-white p-2 hover:bg-[#8b1919] transition-colors z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveIndex((current) => (current + 1) % items.length); }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 text-white p-2 hover:bg-[#8b1919] transition-colors z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+
                         <div className="flex flex-col gap-2">
                             <div className="aspect-video bg-[#202020] overflow-hidden relative">
                                 <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">

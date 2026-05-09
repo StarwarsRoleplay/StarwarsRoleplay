@@ -18,6 +18,7 @@ import Rules from './pages/Rules';
 import Login from './pages/Login';
 import LoreAdmin from './pages/LoreAdmin';
 import LoreEditor from './pages/LoreEditor';
+import RecommendedAdmin from './pages/RecommendedAdmin';
 import { GAME_LINK } from './constants';
 
 export default function App() {
@@ -107,6 +108,13 @@ export default function App() {
                                         >
                                             Lore Admin
                                         </Link>
+                                        <Link 
+                                             to="/admin/recommended" 
+                                             className="block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900"
+                                             onClick={() => setDropdownOpen(false)}
+                                         >
+                                             Recommended Admin
+                                         </Link>
                                         <button 
                                             onClick={() => {
                                                 localStorage.removeItem('swrp_token');
@@ -155,6 +163,7 @@ export default function App() {
                         <Route path="/login" element={<Login />} />
                         <Route path="/lore-admin" element={<LoreAdmin />} />
                         <Route path="/lore-editor" element={<LoreEditor />} />
+                        <Route path="/admin/recommended" element={<RecommendedAdmin />} />
                     </Routes>
                 </main>
 
