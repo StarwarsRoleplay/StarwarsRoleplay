@@ -1,18 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2 } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2, Save } from 'lucide-react';
 
 export default function LoreEditor() {
     const navigate = useNavigate();
-    const [title, setTitle] = useState('');
-    const [slug, setSlug] = useState('');
-    const [category, setCategory] = useState('history');
-    const [content, setContent] = useState('');
+    
+    const [draft] = useState(() => {
+        const d = localStorage.getItem('swrp_lore_draft');
+        return d ? JSON.parse(d) : {};
+    });
+
+    const [title, setTitle] = useState(draft.title || '');
+    const [slug, setSlug] = useState(draft.slug || '');
+    const [category, setCategory] = useState(draft.category || 'history');
+    const [content, setContent] = useState(draft.content || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('split'); // 'edit', 'preview', 'split'
+    const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(!!draft.slug);
+    const [draftSaved, setDraftSaved] = useState(false);
 
     const token = localStorage.getItem('swrp_token');
+
+    // Auto-save to localStorage
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (title || content) {
+                localStorage.setItem('swrp_lore_draft', JSON.stringify({ title, slug, category, content }));
+                setDraftSaved(true);
+                setTimeout(() => setDraftSaved(false), 2000);
+            }
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, [title, slug, category, content]);
+
+    const handleTitleChange = (e) => {
+        const val = e.target.value;
+        setTitle(val);
+        if (!isSlugManuallyEdited) {
+            setSlug(val.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, ''));
+        }
+    };
+
+    const handleSlugChange = (e) => {
+        setSlug(e.target.value);
+        setIsSlugManuallyEdited(true);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -35,6 +68,7 @@ export default function LoreEditor() {
             if (data.error) {
                 setError(data.error);
             } else {
+                localStorage.removeItem('swrp_lore_draft');
                 navigate('/lore');
             }
         })
@@ -75,6 +109,8 @@ export default function LoreEditor() {
         return html;
     };
 
+    const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+
     return (
         <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-12 bg-[#050505]">
             <div className="flex flex-col gap-2">
@@ -102,7 +138,7 @@ export default function LoreEditor() {
                         <input
                             type="text"
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={handleTitleChange}
                             placeholder="e.g. The Battle of Geonosis"
                             className="w-full bg-[#111] border border-zinc-800 text-white p-3 text-sm focus:border-[#8b1919] outline-none transition-colors"
                         />
@@ -112,7 +148,7 @@ export default function LoreEditor() {
                         <input
                             type="text"
                             value={slug}
-                            onChange={(e) => setSlug(e.target.value)}
+                            onChange={handleSlugChange}
                             placeholder="e.g. battle-of-geonosis"
                             className="w-full bg-[#111] border border-zinc-800 text-white p-3 text-sm focus:border-[#8b1919] outline-none transition-colors"
                         />
@@ -144,10 +180,13 @@ export default function LoreEditor() {
                             <button type="button" onClick={() => insertText('- ')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="List"><List size={16} /></button>
                             <button type="button" onClick={() => insertText('[', '](url)')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Link"><LinkIcon size={16} /></button>
                         </div>
-                        <div className="flex gap-2 text-xs font-mono text-zinc-500">
-                            <button type="button" onClick={() => setViewMode('edit')} className={`px-2 py-1 ${viewMode === 'edit' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}><Edit2 size={14} /></button>
-                            <button type="button" onClick={() => setViewMode('preview')} className={`px-2 py-1 ${viewMode === 'preview' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}><Eye size={14} /></button>
-                            <button type="button" onClick={() => setViewMode('split')} className={`px-2 py-1 ${viewMode === 'split' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}>Split</button>
+                        <div className="flex items-center gap-4">
+                            {draftSaved && <span className="text-zinc-600 text-xs font-mono flex items-center gap-1"><Save size={12} /> Draft Saved</span>}
+                            <div className="flex gap-2 text-xs font-mono text-zinc-500">
+                                <button type="button" onClick={() => setViewMode('edit')} className={`px-2 py-1 ${viewMode === 'edit' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}><Edit2 size={14} /></button>
+                                <button type="button" onClick={() => setViewMode('preview')} className={`px-2 py-1 ${viewMode === 'preview' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}><Eye size={14} /></button>
+                                <button type="button" onClick={() => setViewMode('split')} className={`px-2 py-1 ${viewMode === 'split' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}>Split</button>
+                            </div>
                         </div>
                     </div>
 
@@ -168,6 +207,9 @@ export default function LoreEditor() {
                             />
                         )}
                     </div>
+                    <div className="text-right text-zinc-600 text-xs font-mono">
+                        Words: {wordCount}
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -178,13 +220,31 @@ export default function LoreEditor() {
                     >
                         Cancel
                     </button>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-6 py-3 bg-[#8b1919]/10 border border-[#8b1919]/40 text-white font-mono text-xs uppercase tracking-wider hover:bg-[#8b1919] transition-all duration-300 disabled:opacity-50"
-                    >
-                        {loading ? 'Publishing...' : 'Publish Article'}
-                    </button>
+                    <div className="flex gap-4">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (window.confirm('Are you sure you want to clear the draft? This cannot be undone.')) {
+                                    localStorage.removeItem('swrp_lore_draft');
+                                    setTitle('');
+                                    setSlug('');
+                                    setContent('');
+                                    setCategory('history');
+                                    setIsSlugManuallyEdited(false);
+                                }
+                            }}
+                            className="px-6 py-3 bg-transparent border border-zinc-800 text-zinc-500 font-mono text-xs uppercase tracking-wider hover:text-white hover:border-white transition-all duration-300"
+                        >
+                            Clear Draft
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-6 py-3 bg-[#8b1919]/10 border border-[#8b1919]/40 text-white font-mono text-xs uppercase tracking-wider hover:bg-[#8b1919] transition-all duration-300 disabled:opacity-50"
+                        >
+                            {loading ? 'Publishing...' : 'Publish Article'}
+                        </button>
+                    </div>
                 </div>
             </form>
         </section>
