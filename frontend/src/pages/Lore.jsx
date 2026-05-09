@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Book, FileText, Globe, Shield } from 'lucide-react';
+import { Book, FileText, Globe, Shield, ArrowLeft } from 'lucide-react';
 
 export default function Lore() {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedArticle, setSelectedArticle] = useState(null);
 
     const categories = [
         { id: 'history', name: 'Galactic History', icon: Book, desc: 'Explore the overarching history of the galaxy.' },
@@ -22,8 +23,23 @@ export default function Lore() {
             .finally(() => setLoading(false));
     }, [selectedCategory]);
 
+    const parseMarkdown = (text) => {
+        if (!text) return '';
+        let html = text
+            .replace(/^### (.*$)/gim, '<h3 class="text-white font-bold text-lg mt-4 mb-2">$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2 class="text-white font-bold text-xl mt-4 mb-2">$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1 class="text-white font-bold text-2xl mt-4 mb-2">$1</h1>')
+            .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+            .replace(/\*(.*)\*/gim, '<em>$1</em>')
+            .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" class="text-[#8b1919] hover:underline" target="_blank">$1</a>')
+            .replace(/^- (.*$)/gim, '<li class="ml-4 text-zinc-300">$1</li>')
+            .replace(/\[redact\](.*?)\[\/redact\]/gim, '<span class="bg-black text-black hover:text-[#8b1919] transition-colors px-1 cursor-help" title="Redacted by Imperial Order">$1</span>')
+            .replace(/\n/gim, '<br />');
+        return html;
+    };
+
     return (
-        <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-16">
+        <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-12 bg-[#050505]">
             {/* Styles for Holocron */}
             <style>{`
                 .holocron-container {
@@ -82,51 +98,34 @@ export default function Lore() {
                 </span>
             </div>
 
-            {/* 3D Holocron */}
-            <div className="holocron-container my-8">
-                <div className="holocron">
-                    <div className="holocron-face front">Lore</div>
-                    <div className="holocron-face back">Archives</div>
-                    <div className="holocron-face right">History</div>
-                    <div className="holocron-face left">Records</div>
-                    <div className="holocron-face top">Core</div>
-                    <div className="holocron-face bottom">Access</div>
+            {/* Content Area */}
+            {selectedArticle ? (
+                <div className="flex flex-col gap-6 bg-[#0a0a0a] border border-zinc-800 p-8">
+                    <button 
+                        onClick={() => setSelectedArticle(null)}
+                        className="flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-xs uppercase transition-colors self-start"
+                    >
+                        <ArrowLeft size={14} /> Back to List
+                    </button>
+                    <div className="flex flex-col gap-2 border-b border-zinc-800 pb-4">
+                        <h1 className="text-3xl text-white font-black uppercase">{selectedArticle.title}</h1>
+                        <p className="text-zinc-500 text-xs font-mono">
+                            Author: {selectedArticle.author_name} | Published: {new Date(selectedArticle.created_at * 1000).toLocaleDateString()}
+                        </p>
+                    </div>
+                    <div 
+                        className="text-zinc-300 text-sm font-inter leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: parseMarkdown(selectedArticle.content) }}
+                    />
                 </div>
-            </div>
-
-            {/* Categories */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {categories.map(cat => {
-                    const Icon = cat.icon;
-                    return (
-                        <div 
-                            key={cat.id}
-                            className={`bg-[#121212] border ${selectedCategory === cat.id ? 'border-[#8b1919]' : 'border-white/10'} p-8 flex flex-col gap-6 hover:border-[#8b1919]/50 transition-all cursor-pointer group relative`}
-                            onClick={() => {
-                                setSelectedCategory(cat.id);
-                                setLoading(true);
-                            }}
-                        >
-                            <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white opacity-0 group-hover:opacity-100 transition-opacity m-2"></div>
-                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white opacity-0 group-hover:opacity-100 transition-opacity m-2"></div>
-                            
-                            <div className="text-[#8b1919]">
-                                <Icon className="w-10 h-10" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl text-white font-bold uppercase mb-2 group-hover:text-[#8b1919] transition-colors">{cat.name}</h3>
-                                <p className="font-mono text-[14px] text-[#c4c7c8] leading-[20px]">
-                                    {cat.desc}
-                                </p>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Articles List */}
-            {selectedCategory && (
-                <div className="flex flex-col gap-6 mt-8">
+            ) : selectedCategory ? (
+                <div className="flex flex-col gap-6">
+                    <button 
+                        onClick={() => setSelectedCategory(null)}
+                        className="flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-xs uppercase transition-colors self-start"
+                    >
+                        <ArrowLeft size={14} /> Back to Categories
+                    </button>
                     <h3 className="text-2xl text-white font-bold uppercase">Articles in {categories.find(c => c.id === selectedCategory)?.name}</h3>
                     {loading ? (
                         <div className="text-zinc-500 font-mono">Loading articles...</div>
@@ -135,7 +134,11 @@ export default function Lore() {
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
                             {articles.map(article => (
-                                <div key={article.id} className="bg-[#0a0a0a] border border-zinc-800 p-6 hover:border-[#8b1919] transition-colors cursor-pointer">
+                                <div 
+                                    key={article.id} 
+                                    className="bg-[#0a0a0a] border border-zinc-800 p-6 hover:border-[#8b1919] transition-colors cursor-pointer"
+                                    onClick={() => setSelectedArticle(article)}
+                                >
                                     <h4 className="text-lg text-white font-bold uppercase">{article.title}</h4>
                                     <p className="text-zinc-500 text-sm mt-1">By {article.author_name} | {new Date(article.created_at * 1000).toLocaleDateString()}</p>
                                 </div>
@@ -143,6 +146,50 @@ export default function Lore() {
                         </div>
                     )}
                 </div>
+            ) : (
+                <>
+                    {/* 3D Holocron */}
+                    <div className="holocron-container my-8">
+                        <div className="holocron">
+                            <div className="holocron-face front">Lore</div>
+                            <div className="holocron-face back">Archives</div>
+                            <div className="holocron-face right">History</div>
+                            <div className="holocron-face left">Records</div>
+                            <div className="holocron-face top">Core</div>
+                            <div className="holocron-face bottom">Access</div>
+                        </div>
+                    </div>
+
+                    {/* Categories */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {categories.map(cat => {
+                            const Icon = cat.icon;
+                            return (
+                                <div 
+                                    key={cat.id}
+                                    className="bg-[#121212] border border-white/10 p-8 flex flex-col gap-6 hover:border-[#8b1919]/50 transition-all cursor-pointer group relative"
+                                    onClick={() => {
+                                        setSelectedCategory(cat.id);
+                                        setLoading(true);
+                                    }}
+                                >
+                                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white opacity-0 group-hover:opacity-100 transition-opacity m-2"></div>
+                                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white opacity-0 group-hover:opacity-100 transition-opacity m-2"></div>
+                                    
+                                    <div className="text-[#8b1919]">
+                                        <Icon className="w-10 h-10" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl text-white font-bold uppercase mb-2 group-hover:text-[#8b1919] transition-colors">{cat.name}</h3>
+                                        <p className="font-mono text-[14px] text-[#c4c7c8] leading-[20px]">
+                                            {cat.desc}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
             )}
         </section>
     );

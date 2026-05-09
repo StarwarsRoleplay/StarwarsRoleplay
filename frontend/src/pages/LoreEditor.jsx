@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2, Save } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2, Save, Shield } from 'lucide-react';
 
 export default function LoreEditor() {
     const navigate = useNavigate();
@@ -131,6 +131,7 @@ export default function LoreEditor() {
             .replace(/\*(.*)\*/gim, '<em>$1</em>')
             .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" class="text-[#8b1919] hover:underline" target="_blank">$1</a>')
             .replace(/^- (.*$)/gim, '<li class="ml-4 text-zinc-300">$1</li>')
+            .replace(/\[redact\](.*?)\[\/redact\]/gim, '<span class="bg-black text-black hover:text-[#8b1919] transition-colors px-1 cursor-help" title="Redacted by Imperial Order">$1</span>')
             .replace(/\n/gim, '<br />');
         return html;
     };
@@ -205,6 +206,7 @@ export default function LoreEditor() {
                             <button type="button" onClick={() => insertText('## ')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="H2"><Heading2 size={16} /></button>
                             <button type="button" onClick={() => insertText('- ')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="List"><List size={16} /></button>
                             <button type="button" onClick={() => insertText('[', '](url)')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Link"><LinkIcon size={16} /></button>
+                            <button type="button" onClick={() => insertText('[redact]', '[/redact]')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Redact"><Shield size={16} /></button>
                         </div>
                         <div className="flex items-center gap-4">
                             {draftSaved && <span className="text-zinc-600 text-xs font-mono flex items-center gap-1"><Save size={12} /> Draft Saved</span>}

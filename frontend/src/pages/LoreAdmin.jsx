@@ -27,7 +27,7 @@ const RobloxAvatar = ({ userId, username }) => {
     );
 };
 
-const PAGES = ['lore', 'staff', 'divisions', 'rules'];
+const PAGES = ['lore'];
 const ACTIONS = ['read', 'write', 'admin'];
 
 export default function UserManagement() {
@@ -203,7 +203,7 @@ export default function UserManagement() {
                     Imperial Archives
                 </div>
                 <h1 className="text-4xl text-white font-black uppercase tracking-tight">
-                    User Management
+                    Lore Admin
                 </h1>
                 <p className="text-[#c4c7c8] text-sm max-w-2xl">
                     Grant access to specific pages and features for users.

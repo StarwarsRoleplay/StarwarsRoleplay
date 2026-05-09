@@ -105,7 +105,7 @@ export default function App() {
                                             className="block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase"
                                             onClick={() => setDropdownOpen(false)}
                                         >
-                                            User Management
+                                            Lore Admin
                                         </Link>
                                         <button 
                                             onClick={() => {
