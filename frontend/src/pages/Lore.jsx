@@ -4,8 +4,10 @@ import { Book, FileText, Globe, Shield, ArrowLeft } from 'lucide-react';
 export default function Lore() {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [articles, setArticles] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [selectedArticle, setSelectedArticle] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTag, setSelectedTag] = useState(null);
 
     const categories = [
         { id: 'history', name: 'Galactic History', icon: Book, desc: 'Explore the overarching history of the galaxy.' },
@@ -38,6 +40,13 @@ export default function Lore() {
         return html;
     };
 
+    const filteredArticles = articles.filter(article => {
+        const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              article.content.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesTag = !selectedTag || (article.tags && article.tags.split(',').map(t => t.trim()).includes(selectedTag));
+        return matchesSearch && matchesTag;
+    });
+
     return (
         <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-12 bg-[#050505]">
             {/* Styles for Holocron */}
@@ -69,6 +78,12 @@ export default function Lore() {
                     font-size: 10px;
                     color: #fff;
                     text-transform: uppercase;
+                    cursor: pointer;
+                    transition: background 0.3s;
+                }
+                .holocron-face:hover {
+                    background: rgba(139, 25, 25, 0.3);
+                }
                     letter-spacing: 2px;
                     backface-visibility: hidden;
                 }
@@ -121,19 +136,49 @@ export default function Lore() {
             ) : selectedCategory ? (
                 <div className="flex flex-col gap-6">
                     <button 
-                        onClick={() => setSelectedCategory(null)}
+                        onClick={() => { setSelectedCategory(null); setSearchQuery(''); setSelectedTag(null); }}
                         className="flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-xs uppercase transition-colors self-start"
                     >
                         <ArrowLeft size={14} /> Back to Categories
                     </button>
                     <h3 className="text-2xl text-white font-bold uppercase">Articles in {categories.find(c => c.id === selectedCategory)?.name}</h3>
+                    
+                    <div className="flex flex-col gap-4">
+                        <input
+                            type="text"
+                            placeholder="Search articles..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-[#0a0a0a] border border-zinc-800 p-3 text-white font-mono text-sm focus:border-[#8b1919] focus:outline-none transition-colors"
+                        />
+                        
+                        {/* Tags */}
+                        {articles.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {[...new Set(articles.flatMap(a => a.tags ? a.tags.split(',').map(t => t.trim()) : []))].filter(Boolean).map(tag => (
+                                    <button
+                                        key={tag}
+                                        onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                                        className={`px-2 py-1 font-mono text-xs uppercase border transition-colors ${
+                                            selectedTag === tag 
+                                                ? 'bg-[#8b1919] border-[#8b1919] text-white' 
+                                                : 'bg-[#0a0a0a] border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white'
+                                        }`}
+                                    >
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {loading ? (
                         <div className="text-zinc-500 font-mono">Loading articles...</div>
-                    ) : articles.length === 0 ? (
-                        <div className="text-zinc-600 font-mono">No articles found in this category.</div>
+                    ) : filteredArticles.length === 0 ? (
+                        <div className="text-zinc-600 font-mono">No articles match your search or filters.</div>
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
-                            {articles.map(article => (
+                            {filteredArticles.map(article => (
                                 <div 
                                     key={article.id} 
                                     className="bg-[#0a0a0a] border border-zinc-800 p-6 hover:border-[#8b1919] transition-colors cursor-pointer"
@@ -151,10 +196,10 @@ export default function Lore() {
                     {/* 3D Holocron */}
                     <div className="holocron-container my-8">
                         <div className="holocron">
-                            <div className="holocron-face front">Lore</div>
-                            <div className="holocron-face back">Archives</div>
-                            <div className="holocron-face right">History</div>
-                            <div className="holocron-face left">Records</div>
+                            <div className="holocron-face front" onClick={() => setSelectedCategory('history')}>History</div>
+                            <div className="holocron-face back" onClick={() => setSelectedCategory('custom')}>Custom</div>
+                            <div className="holocron-face right" onClick={() => setSelectedCategory('factions')}>Factions</div>
+                            <div className="holocron-face left" onClick={() => setSelectedCategory('operations')}>Operations</div>
                             <div className="holocron-face top">Core</div>
                             <div className="holocron-face bottom">Access</div>
                         </div>

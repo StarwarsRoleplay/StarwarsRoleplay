@@ -75,13 +75,17 @@ export default function UserManagement() {
     }, [token, navigate]);
 
     const fetchArticles = React.useCallback(() => {
-        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles')
+        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles?show_drafts=true', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
         .then(res => res.json())
         .then(data => {
             setArticles(data);
         })
         .catch(err => console.error('Failed to fetch articles', err));
-    }, []);
+    }, [token]);
 
     useEffect(() => {
         if (!token) {
@@ -92,6 +96,26 @@ export default function UserManagement() {
         fetchWriters();
         fetchArticles();
     }, [token, navigate, fetchWriters, fetchArticles]);
+
+    const handleDeleteArticle = (id) => {
+        if (!window.confirm('Are you sure you want to delete this article?')) return;
+        
+        fetch(`https://swrp.thatzane.workers.dev/api/v1/lore/articles?id=${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                fetchArticles();
+            } else {
+                alert(data.error || 'Failed to delete article');
+            }
+        })
+        .catch(err => alert(err.message));
+    };
 
     const handleAddUser = (e) => {
         e.preventDefault();
@@ -362,12 +386,20 @@ export default function UserManagement() {
                                         <span>Author: {article.author_name}</span>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => navigate(`/lore-editor?id=${article.id}`)}
-                                    className="px-3 py-1 bg-transparent border border-zinc-700 text-zinc-400 font-mono text-xs uppercase hover:border-white hover:text-white transition-colors"
-                                >
-                                    Edit
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => navigate(`/lore-editor?id=${article.id}`)}
+                                        className="px-3 py-1 bg-transparent border border-zinc-700 text-zinc-400 font-mono text-xs uppercase hover:border-white hover:text-white transition-colors"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteArticle(article.id)}
+                                        className="px-3 py-1 bg-transparent border border-zinc-700 text-zinc-400 font-mono text-xs uppercase hover:border-[#8b1919] hover:text-[#8b1919] transition-colors"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

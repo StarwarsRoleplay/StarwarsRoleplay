@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2, Save, Shield } from 'lucide-react';
+import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2, Save, Shield, Image as ImageIcon } from 'lucide-react';
 
 export default function LoreEditor() {
     const navigate = useNavigate();
@@ -17,11 +17,13 @@ export default function LoreEditor() {
     const [slug, setSlug] = useState(draft.slug || '');
     const [category, setCategory] = useState(draft.category || 'history');
     const [content, setContent] = useState(draft.content || '');
+    const [tags, setTags] = useState('');
     const [loading, setLoading] = useState(!!id);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('split'); // 'edit', 'preview', 'split'
     const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(!!draft.slug);
     const [draftSaved, setDraftSaved] = useState(false);
+    const [currentDraftId, setCurrentDraftId] = useState(null);
 
     const token = localStorage.getItem('swrp_token');
 
@@ -36,6 +38,7 @@ export default function LoreEditor() {
                         setSlug(data.slug || '');
                         setCategory(data.category || 'history');
                         setContent(data.content || '');
+                        setTags(data.tags || '');
                         setIsSlugManuallyEdited(true);
                     }
                 })
@@ -44,18 +47,45 @@ export default function LoreEditor() {
         }
     }, [id]);
 
-    // Auto-save to localStorage (only if NOT editing)
+    // Auto-save to DB
     useEffect(() => {
-        if (id) return; // Don't auto-save to draft if editing
         const timer = setTimeout(() => {
             if (title || content) {
-                localStorage.setItem('swrp_lore_draft', JSON.stringify({ title, slug, category, content }));
-                setDraftSaved(true);
-                setTimeout(() => setDraftSaved(false), 2000);
+                const method = (id || currentDraftId) ? 'PUT' : 'POST';
+                const targetId = id || currentDraftId;
+                const body = { 
+                    title, 
+                    slug, 
+                    content, 
+                    category, 
+                    is_draft: true,
+                    tags
+                };
+                if (targetId) body.id = targetId;
+
+                fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles', {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(body)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setDraftSaved(true);
+                        setTimeout(() => setDraftSaved(false), 2000);
+                        if (!targetId && data.id) {
+                            setCurrentDraftId(data.id);
+                        }
+                    }
+                })
+                .catch(err => console.error('Failed to auto-save draft', err));
             }
-        }, 1000);
+        }, 2000);
         return () => clearTimeout(timer);
-    }, [title, slug, category, content, id]);
+    }, [title, slug, category, content, tags, id, currentDraftId, token]);
 
     const handleTitleChange = (e) => {
         const val = e.target.value;
@@ -78,8 +108,17 @@ export default function LoreEditor() {
         }
 
         setLoading(true);
-        const method = id ? 'PUT' : 'POST';
-        const body = id ? { id, title, slug, content, category } : { title, slug, content, category };
+        const method = (id || currentDraftId) ? 'PUT' : 'POST';
+        const targetId = id || currentDraftId;
+        const body = { 
+            title, 
+            slug, 
+            content, 
+            category, 
+            is_draft: false,
+            tags
+        };
+        if (targetId) body.id = targetId;
 
         fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles', {
             method: method,
@@ -119,6 +158,40 @@ export default function LoreEditor() {
             textarea.focus();
             textarea.setSelectionRange(start + before.length, end + before.length);
         }, 0);
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Discord Webhook URL (Placeholder)
+        const webhookUrl = 'YOUR_DISCORD_WEBHOOK_URL_HERE'; 
+
+        if (webhookUrl === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
+            alert('Please configure the Discord Webhook URL in LoreEditor.jsx!');
+            setLoading(false);
+            return;
+        }
+
+        fetch(webhookUrl + '?wait=true', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.attachments && data.attachments[0]) {
+                const url = data.attachments[0].url;
+                insertText(`![image](${url})`);
+            } else {
+                alert('Failed to get attachment URL from Discord');
+            }
+        })
+        .catch(err => alert('Upload failed: ' + err.message))
+        .finally(() => setLoading(false));
     };
 
     const parseMarkdown = (text) => {
@@ -182,18 +255,30 @@ export default function LoreEditor() {
                     </div>
                 </div>
 
-                <div>
-                    <label className="block text-zinc-500 text-xs font-mono uppercase mb-1">Category</label>
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="w-full bg-[#111] border border-zinc-800 text-white p-3 text-sm focus:border-[#8b1919] outline-none transition-colors"
-                    >
-                        <option value="history">Galactic History</option>
-                        <option value="custom">Custom Lore</option>
-                        <option value="factions">Faction Records</option>
-                        <option value="operations">Operations Archive</option>
-                    </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-zinc-500 text-xs font-mono uppercase mb-1">Category</label>
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            className="w-full bg-[#111] border border-zinc-800 text-white p-3 text-sm focus:border-[#8b1919] outline-none transition-colors"
+                        >
+                            <option value="history">Galactic History</option>
+                            <option value="custom">Custom Lore</option>
+                            <option value="factions">Faction Records</option>
+                            <option value="operations">Operations Archive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-zinc-500 text-xs font-mono uppercase mb-1">Tags (Comma separated)</label>
+                        <input
+                            type="text"
+                            value={tags}
+                            onChange={(e) => setTags(e.target.value)}
+                            placeholder="e.g. jedi, sith, empire"
+                            className="w-full bg-[#111] border border-zinc-800 text-white p-3 text-sm focus:border-[#8b1919] outline-none transition-colors"
+                        />
+                    </div>
                 </div>
 
                 {/* Editor Toolbar & Split View */}
@@ -207,6 +292,8 @@ export default function LoreEditor() {
                             <button type="button" onClick={() => insertText('- ')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="List"><List size={16} /></button>
                             <button type="button" onClick={() => insertText('[', '](url)')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Link"><LinkIcon size={16} /></button>
                             <button type="button" onClick={() => insertText('[redact]', '[/redact]')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Redact"><Shield size={16} /></button>
+                            <button type="button" onClick={() => document.getElementById('image-upload').click()} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Upload Image"><ImageIcon size={16} /></button>
+                            <input type="file" id="image-upload" className="hidden" accept="image/*" onChange={handleImageUpload} />
                         </div>
                         <div className="flex items-center gap-4">
                             {draftSaved && <span className="text-zinc-600 text-xs font-mono flex items-center gap-1"><Save size={12} /> Draft Saved</span>}

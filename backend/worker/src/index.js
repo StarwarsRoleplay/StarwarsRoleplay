@@ -500,19 +500,39 @@ export default {
                 const slug = url.searchParams.get('slug');
                 const category = url.searchParams.get('category');
                 const id = url.searchParams.get('id');
+                const showDrafts = url.searchParams.get('show_drafts') === 'true';
                 
-                let query = "SELECT * FROM lore_articles";
+                let query = "SELECT * FROM lore_articles WHERE 1=1";
                 let params = [];
                 
                 if (id) {
-                    query += " WHERE id = ?";
+                    query += " AND id = ?";
                     params.push(id);
                 } else if (slug) {
-                    query += " WHERE slug = ?";
+                    query += " AND slug = ?";
                     params.push(slug);
                 } else if (category) {
-                    query += " WHERE category = ?";
+                    query += " AND category = ?";
                     params.push(category);
+                }
+                
+                if (!showDrafts) {
+                    query += " AND (is_draft IS NULL OR is_draft = 0)";
+                } else {
+                    // Check if user is authorized to see drafts
+                    if (!user) {
+                        const headers = getCorsHeaders(request);
+                        headers.set('Content-Type', 'application/json');
+                        return new Response(JSON.stringify({ error: 'Unauthorized to view drafts' }), { status: 401, headers });
+                    }
+                    const isAdmin = await isUserAdmin(user.id, env);
+                    const permissions = await getUserPermissions(user.id, env);
+                    const canWrite = isAdmin || (permissions && permissions.pages && permissions.pages.lore && permissions.pages.lore.includes('write'));
+                    if (!canWrite) {
+                        const headers = getCorsHeaders(request);
+                        headers.set('Content-Type', 'application/json');
+                        return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+                    }
                 }
                 
                 query += " ORDER BY created_at DESC";
@@ -549,7 +569,7 @@ export default {
             }
 
             const body = await request.json();
-            const { title, slug, content, category } = body;
+            const { title, slug, content, category, is_draft, tags } = body;
 
             if (!title || !slug || !content || !category) {
                 const headers = getCorsHeaders(request);
@@ -558,8 +578,8 @@ export default {
             }
 
             try {
-                await env.DB.prepare(
-                    "INSERT INTO lore_articles (title, slug, content, category, author_id, author_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                const result = await env.DB.prepare(
+                    "INSERT INTO lore_articles (title, slug, content, category, author_id, author_name, created_at, updated_at, is_draft, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 ).bind(
                     title,
                     slug,
@@ -568,12 +588,14 @@ export default {
                     String(user.id),
                     user.username,
                     Math.floor(Date.now() / 1000),
-                    Math.floor(Date.now() / 1000)
+                    Math.floor(Date.now() / 1000),
+                    is_draft ? 1 : 0,
+                    tags || ''
                 ).run();
 
                 const headers = getCorsHeaders(request);
                 headers.set('Content-Type', 'application/json');
-                return new Response(JSON.stringify({ success: true }), { headers });
+                return new Response(JSON.stringify({ success: true, id: result.meta.last_row_id }), { headers });
             } catch (error) {
                 const headers = getCorsHeaders(request);
                 headers.set('Content-Type', 'application/json');
@@ -600,7 +622,7 @@ export default {
             }
 
             const body = await request.json();
-            const { id, title, slug, content, category } = body;
+            const { id, title, slug, content, category, is_draft, tags } = body;
 
             if (!id || !title || !slug || !content || !category) {
                 const headers = getCorsHeaders(request);
@@ -610,15 +632,58 @@ export default {
 
             try {
                 await env.DB.prepare(
-                    "UPDATE lore_articles SET title = ?, slug = ?, content = ?, category = ?, updated_at = ? WHERE id = ?"
+                    "UPDATE lore_articles SET title = ?, slug = ?, content = ?, category = ?, updated_at = ?, is_draft = ?, tags = ? WHERE id = ?"
                 ).bind(
                     title,
                     slug,
                     content,
                     category,
                     Math.floor(Date.now() / 1000),
+                    is_draft ? 1 : 0,
+                    tags || '',
                     id
                 ).run();
+
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ success: true }), { headers });
+            } catch (error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { status: 500, headers });
+            }
+        }
+
+        // DELETE: Delete article
+        if (request.method === 'DELETE') {
+            if (!user) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+            }
+
+            const isAdmin = await isUserAdmin(user.id, env);
+            const permissions = await getUserPermissions(user.id, env);
+            const canWrite = isAdmin || (permissions && permissions.pages && permissions.pages.lore && permissions.pages.lore.includes('write'));
+            
+            if (!canWrite) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+            }
+
+            const id = url.searchParams.get('id');
+
+            if (!id) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Missing article ID' }), { status: 400, headers });
+            }
+
+            try {
+                await env.DB.prepare(
+                    "DELETE FROM lore_articles WHERE id = ?"
+                ).bind(id).run();
 
                 const headers = getCorsHeaders(request);
                 headers.set('Content-Type', 'application/json');
