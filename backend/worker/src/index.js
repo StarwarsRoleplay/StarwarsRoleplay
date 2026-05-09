@@ -706,39 +706,43 @@ export default {
             const headers = getCorsHeaders(request);
             headers.set('Content-Type', 'application/json');
 
-            // Ensure table exists
-            await env.DB.prepare(
-                "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)"
-            ).run();
+            try {
+                // Ensure table exists
+                await env.DB.prepare(
+                    "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)"
+                ).run();
 
-            // GET: Fetch recommended items
-            if (request.method === 'GET') {
-                const result = await env.DB.prepare(
-                    "SELECT value FROM settings WHERE key = 'recommended_items'"
-                ).first();
-                return new Response(result ? result.value : '[]', { headers });
-            }
-
-            // POST: Update recommended items
-            if (request.method === 'POST') {
-                if (!user) {
-                    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+                // GET: Fetch recommended items
+                if (request.method === 'GET') {
+                    const result = await env.DB.prepare(
+                        "SELECT value FROM settings WHERE key = 'recommended_items'"
+                    ).first();
+                    return new Response(result ? result.value : '[]', { headers });
                 }
 
-                const isAdmin = await isUserAdmin(user.id, env);
-                if (!isAdmin) {
-                    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
-                }
+                // POST: Update recommended items
+                if (request.method === 'POST') {
+                    if (!user) {
+                        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+                    }
 
-                try {
-                    const data = await request.json();
-                    await env.DB.prepare(
-                        "INSERT OR REPLACE INTO settings (key, value) VALUES ('recommended_items', ?)"
-                    ).bind(JSON.stringify(data)).run();
-                    return new Response(JSON.stringify({ success: true }), { headers });
-                } catch (error) {
-                    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
+                    const isAdmin = await isUserAdmin(user.id, env);
+                    if (!isAdmin) {
+                        return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+                    }
+
+                    try {
+                        const data = await request.json();
+                        await env.DB.prepare(
+                            "INSERT OR REPLACE INTO settings (key, value) VALUES ('recommended_items', ?)"
+                        ).bind(JSON.stringify(data)).run();
+                        return new Response(JSON.stringify({ success: true }), { headers });
+                    } catch (error) {
+                        return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
+                    }
                 }
+            } catch (error) {
+                return new Response(JSON.stringify({ error: 'Internal Error', message: error.message }), { status: 500, headers });
             }
         }
     }
