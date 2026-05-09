@@ -709,10 +709,8 @@ export default {
             try {
                 // GET: Fetch recommended items
                 if (request.method === 'GET') {
-                    const result = await env.DB.prepare(
-                        "SELECT content FROM lore_articles WHERE slug = 'recommended_items'"
-                    ).first();
-                    return new Response(result ? result.content : '[]', { headers });
+                    const items = await env.RECOMMENDED.get('items');
+                    return new Response(items || '[]', { headers });
                 }
 
                 // POST: Update recommended items
@@ -728,28 +726,7 @@ export default {
 
                     try {
                         const data = await request.json();
-                        const existing = await env.DB.prepare(
-                            "SELECT id FROM lore_articles WHERE slug = 'recommended_items'"
-                        ).first();
-
-                        if (existing) {
-                            await env.DB.prepare(
-                                "UPDATE lore_articles SET content = ?, updated_at = ? WHERE slug = 'recommended_items'"
-                            ).bind(JSON.stringify(data), Math.floor(Date.now() / 1000)).run();
-                        } else {
-                            await env.DB.prepare(
-                                "INSERT INTO lore_articles (title, slug, content, category, created_at, updated_at, is_draft, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-                            ).bind(
-                                'Recommended Items',
-                                'recommended_items',
-                                JSON.stringify(data),
-                                'system',
-                                Math.floor(Date.now() / 1000),
-                                Math.floor(Date.now() / 1000),
-                                1, // draft
-                                ''
-                            ).run();
-                        }
+                        await env.RECOMMENDED.put('items', JSON.stringify(data));
                         return new Response(JSON.stringify({ success: true }), { headers });
                     } catch (error) {
                         return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
