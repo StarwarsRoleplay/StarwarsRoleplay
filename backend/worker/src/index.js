@@ -252,8 +252,8 @@ async function fetchStaffFromRoblox() {
     // Create final structure
     const processedStaff = {};
     
-    // 1. System Owner
-    processedStaff["System Owner"] = [targetUser];
+    // 1. Website Maintainer
+    processedStaff["Website Maintainer"] = [targetUser];
     
     // 2. SWRP : Project Lead (Merge Ownership and Project Lead)
     const ownershipUsers = staffByRank["Ownership"] || [];
