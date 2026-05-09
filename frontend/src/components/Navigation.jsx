@@ -22,6 +22,7 @@ export default function Navigation() {
                 <Link className={isActive('/divisions')} to="/divisions">Divisions</Link>
                 <Link className={isActive('/lore')} to="/lore">Lore</Link>
                 <Link className={isActive('/staff')} to="/staff">Staff</Link>
+                <Link className={isActive('/rules')} to="/rules">Rules</Link>
                 <Link className={isActive('/holonet')} to="/holonet">Holonet</Link>
             </nav>
 
@@ -41,6 +42,7 @@ export default function Navigation() {
                         <Link className={isMobileActive('/divisions')} to="/divisions" onClick={() => setIsOpen(false)}>Divisions</Link>
                         <Link className={isMobileActive('/lore')} to="/lore" onClick={() => setIsOpen(false)}>Lore</Link>
                         <Link className={isMobileActive('/staff')} to="/staff" onClick={() => setIsOpen(false)}>Staff</Link>
+                        <Link className={isMobileActive('/rules')} to="/rules" onClick={() => setIsOpen(false)}>Rules</Link>
                         <Link className={isMobileActive('/holonet')} to="/holonet" onClick={() => setIsOpen(false)}>Holonet</Link>
                     </nav>
                 </div>
