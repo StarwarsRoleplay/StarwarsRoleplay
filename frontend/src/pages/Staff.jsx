@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const RANK_ORDER = [
-    'Ownership',
+    'System Owner',
     'SWRP : Project Lead',
     'Manager',
     'Team Management',

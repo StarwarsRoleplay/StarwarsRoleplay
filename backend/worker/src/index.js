@@ -204,7 +204,7 @@ async function fetchStaffFromRoblox() {
         }
     }
     
-    // Build final structure
+    // Build initial structure
     for (const role of roles) {
         const users = usersByRole[role.name] || [];
         staffByRank[role.name] = users.map(user => ({
@@ -222,5 +222,50 @@ async function fetchStaffFromRoblox() {
         }
     });
 
-    return staffByRank;
+    const targetUserId = 1445263976; // thatzanex
+    let targetUser = null;
+
+    // Find the target user in any role to get his data
+    for (const rank in staffByRank) {
+        const user = staffByRank[rank].find(u => u.id === targetUserId);
+        if (user) {
+            targetUser = user;
+            break;
+        }
+    }
+
+    // If not found (unlikely), create a fallback
+    if (!targetUser) {
+        targetUser = {
+            id: targetUserId,
+            name: "thatzanex",
+            displayName: "Zane",
+            avatarUrl: thumbnailMap[targetUserId] || null
+        };
+    }
+
+    // Remove him from all other roles
+    for (const rank in staffByRank) {
+        staffByRank[rank] = staffByRank[rank].filter(u => u.id !== targetUserId);
+    }
+
+    // Create final structure
+    const processedStaff = {};
+    
+    // 1. System Owner
+    processedStaff["System Owner"] = [targetUser];
+    
+    // 2. SWRP : Project Lead (Merge Ownership and Project Lead)
+    const ownershipUsers = staffByRank["Ownership"] || [];
+    const projectLeadUsers = staffByRank["SWRP : Project Lead"] || [];
+    processedStaff["SWRP : Project Lead"] = [...ownershipUsers, ...projectLeadUsers];
+    
+    // 3. Add the rest
+    RANKS_OF_INTEREST.forEach(rank => {
+        if (rank !== "Ownership" && rank !== "SWRP : Project Lead") {
+            processedStaff[rank] = staffByRank[rank] || [];
+        }
+    });
+
+    return processedStaff;
 }
