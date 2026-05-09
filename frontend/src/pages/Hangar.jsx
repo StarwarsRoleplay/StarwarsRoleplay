@@ -9,7 +9,7 @@ function StormtrooperModel() {
     return (
         <primitive 
             object={scene} 
-            scale={2.5}
+            scale={37.5}
             position={[0, -2, 0]}
         />
     );

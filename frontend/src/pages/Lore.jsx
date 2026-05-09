@@ -8,7 +8,7 @@ function HolocronModel({ onSelect }) {
     return (
         <primitive 
             object={scene} 
-            scale={4}
+            scale={14}
             onClick={() => onSelect('history')}
             className="cursor-pointer"
         />
@@ -208,7 +208,7 @@ export default function Lore() {
             ) : (
                 <>
                     {/* 3D Holocron */}
-                    <div className="w-full h-[300px] my-8 bg-[#0a0a0a] border border-zinc-800">
+                    <div className="w-full h-[500px] my-8 bg-[#0a0a0a] border border-zinc-800">
                         <Canvas camera={{ position: [0, 0, 3], fov: 45 }}>
                             <ambientLight intensity={0.7} />
                             <pointLight position={[10, 10, 10]} intensity={1.5} />

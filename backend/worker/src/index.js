@@ -898,7 +898,7 @@ async function fetchStaffFromRoblox() {
 
 async function isUserAdmin(userId, env) {
     // Website Maintainer hardcoded
-    if (userId === '1445263976') return true;
+    if (String(userId) === '1445263976') return true;
     
     // Check Roblox rank
     try {
