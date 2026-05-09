@@ -147,12 +147,14 @@ export default {
 };
 
 async function fetchStaffFromRoblox() {
+    const headers = {
+        'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept':          'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+    };
+
     // Fetch roles
-    const rolesResponse = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}/roles`, {
-        headers: {
-            'User-Agent': 'Mozilla/5.0'
-        }
-    });
+    const rolesResponse = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}/roles`, { headers });
     const rolesData = await rolesResponse.json();
     
     if (!rolesData.roles) {
@@ -162,25 +164,55 @@ async function fetchStaffFromRoblox() {
     const roles = rolesData.roles.filter(role => RANKS_OF_INTEREST.includes(role.name));
     
     const staffByRank = {};
+    const allUserIds = [];
+    const usersByRole = {};
     
     for (const role of roles) {
         // Fetch users for this role
-        const usersResponse = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}/roles/${role.id}/users`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0'
-            }
-        });
+        const usersResponse = await fetch(`https://groups.roblox.com/v1/groups/${GROUP_ID}/roles/${role.id}/users?sortOrder=Asc&limit=100`, { headers });
         const usersData = await usersResponse.json();
         
         if (usersData.data) {
-            staffByRank[role.name] = usersData.data.map(user => ({
-                id: user.userId,
-                name: user.username,
-                displayName: user.displayName
-            }));
+            usersByRole[role.name] = usersData.data;
+            usersData.data.forEach(u => allUserIds.push(u.userId));
         } else {
-            staffByRank[role.name] = [];
+            usersByRole[role.name] = [];
         }
+    }
+    
+    // Batch fetch thumbnails
+    const thumbnailMap = {};
+    if (allUserIds.length > 0) {
+        try {
+            // Deduplicate IDs
+            const uniqueIds = [...new Set(allUserIds)];
+            const idsStr = uniqueIds.join(',');
+            const thumbRes = await fetch(
+                `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${idsStr}&size=150x150&format=Png&isCircular=false`,
+                { headers }
+            );
+            if (thumbRes.ok) {
+                const thumbData = await thumbRes.json();
+                thumbData.data.forEach(t => {
+                    if (t.state === 'Completed') {
+                        thumbnailMap[t.targetId] = t.imageUrl;
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Failed to fetch thumbnails:', e.message);
+        }
+    }
+    
+    // Build final structure
+    for (const role of roles) {
+        const users = usersByRole[role.name] || [];
+        staffByRank[role.name] = users.map(user => ({
+            id: user.userId,
+            name: user.username,
+            displayName: user.displayName,
+            avatarUrl: thumbnailMap[user.userId] || null
+        }));
     }
     
     // Ensure all requested ranks are present in the output, even if empty
