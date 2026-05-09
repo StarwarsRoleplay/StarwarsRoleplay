@@ -57,7 +57,7 @@ export default function App() {
             <header className="fixed top-0 w-full z-50 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/10">
                 <div className="flex justify-between items-center w-full px-6 md:px-16 h-20 max-w-[1440px] mx-auto">
                     <div className="text-[32px] font-black tracking-tighter text-white">
-                        CORUSCANT RP
+                        STAR WARS RP
                     </div>
 
                     <nav className="hidden md:flex gap-8 items-center font-mono text-[12px] uppercase tracking-[0.15em] font-medium text-[#c4c7c8]">
@@ -67,7 +67,7 @@ export default function App() {
                             className="hover:text-white hover:bg-white/5 transition-colors pb-1 uppercase" 
                             onClick={() => setShowDiscordModal(true)}
                         >
-                            Commnet
+                            Holonet
                         </button>
                     </nav>
 
@@ -90,12 +90,12 @@ export default function App() {
                     <div className="w-full max-w-[1440px] mx-auto px-6 md:px-16 relative z-10 grid grid-cols-12 gap-6">
                         <div className="col-span-12 md:col-span-8 flex flex-col gap-8">
                             <h1 className="text-5xl md:text-[100px] lg:text-[120px] text-white font-black uppercase tracking-[-0.04em] leading-[0.9]">
-                                STAR WARS:<br />
-                                CORUSCANT ROLEPLAY
+                                STAR WARS<br />
+                                ROLEPLAY
                             </h1>
 
                             <p className="font-mono text-[14px] text-[#c4c7c8] max-w-2xl border-l-2 border-[#8b1919] pl-4 py-1 leading-[20px]">
-                                INITIALIZING GRAND ARMY PROTOCOLS. DEPLOY TO THE HEART OF THE REPUBLIC. TACTICAL IMMERSION AWAITS IN SECTOR ZERO.
+                                A LONG TIME AGO IN A GALAXY FAR, FAR AWAY... THE GALAXY IS IN TURMOIL. THE SEPARATIST THREAT LOOMS OVER THE CORE WORLDS. ANSWER THE CALL OF THE SUPREME CHANCELLOR. DEPLOY YOUR SQUADRON. MAY THE FORCE BE WITH YOU.
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -122,9 +122,9 @@ export default function App() {
 
                     {/* Structural HUD Elements */}
                     <div className="absolute bottom-8 left-6 md:left-16 hidden md:flex items-center gap-4 font-mono text-[12px] font-medium tracking-[0.15em] text-[#c4c7c8]/50 uppercase">
-                        <span>SYS.STAT: <span className="text-white">ONLINE</span></span>
+                        <span>HYPERDRIVE: <span className="text-white">ACTIVE</span></span>
                         <span className="w-1 h-1 bg-white/20"></span>
-                        <span>SEC.GRID: <span className="text-[#8b1919]">ACTIVE</span></span>
+                        <span>SHIELDS: <span className="text-[#8b1919]">DEFLECTING</span></span>
                     </div>
                 </section>
 
@@ -132,10 +132,10 @@ export default function App() {
                 <section id="divisions" className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-16">
                     <div className="flex flex-col gap-2 border-l-4 border-white pl-6">
                         <h2 className="text-[32px] leading-[40px] text-white font-bold uppercase tracking-tight">
-                            ACTIVE DIVISIONS
+                            GRAND ARMY DIVISIONS
                         </h2>
                         <span className="font-mono text-[12px] font-medium text-[#c4c7c8] uppercase tracking-[0.15em]">
-                            Select deployment sector
+                            Choose your battalion and secure the sector.
                         </span>
                     </div>
 
@@ -287,15 +287,15 @@ export default function App() {
                             <div>
                                 <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
                                     <span className="w-2 h-2 bg-[#8b1919]"></span>
-                                    COMMUNICATION HUB
+                                    HOLONET TRANSCEIVER
                                 </div>
                                 <h2 className="text-[32px] text-white font-bold uppercase leading-tight">
-                                    Join the Holonet
+                                    Establish Holonet Link
                                 </h2>
                             </div>
 
                             <div className="font-mono text-[14px] text-[#c4c7c8] border-l-2 border-[#8b1919] pl-4 py-1 leading-[20px]">
-                                Connect with the community, receive deployment orders, and participate in events. Our main communication hub is hosted on Discord.
+                                Transmit your coordinates to the Jedi Council and connect with the fleet. Our primary Holonet frequency is hosted on Discord.
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -305,14 +305,14 @@ export default function App() {
                                     rel="noreferrer"
                                     className="bg-white text-[#0A0A0A] font-mono text-[12px] font-medium px-8 py-4 uppercase tracking-[0.15em] hover:bg-[#5865F2] hover:text-white transition-all duration-300 w-full flex items-center justify-center gap-2 group"
                                 >
-                                    Join Discord
+                                    Connect
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </a>
                                 <button
                                     onClick={() => setShowDiscordModal(false)}
                                     className="bg-transparent border border-white/20 text-white font-mono text-[12px] font-medium px-8 py-4 uppercase tracking-[0.15em] hover:bg-white/5 transition-all duration-300 w-full"
                                 >
-                                    Close
+                                    Dismiss
                                 </button>
                             </div>
                         </div>
