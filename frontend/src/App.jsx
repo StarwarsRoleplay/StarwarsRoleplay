@@ -20,7 +20,19 @@ import LoreAdmin from './pages/LoreAdmin';
 import { GAME_LINK } from './constants';
 
 export default function App() {
-    const [user, setUser] = React.useState(null);
+    const [user] = React.useState(() => {
+        const token = localStorage.getItem('swrp_token');
+        if (token) {
+            try {
+                const payloadBase64 = token.split('.')[0];
+                const payload = JSON.parse(atob(payloadBase64));
+                return payload.user;
+            } catch (e) {
+                console.error('Failed to parse token', e);
+            }
+        }
+        return null;
+    });
     const [avatarUrl, setAvatarUrl] = React.useState(null);
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
@@ -36,27 +48,18 @@ export default function App() {
             return;
         }
 
-        const token = localStorage.getItem('swrp_token');
-        if (token) {
-            try {
-                const payloadBase64 = token.split('.')[0];
-                const payload = JSON.parse(atob(payloadBase64));
-                setUser(payload.user);
-                
-                // Fetch avatar via proxy to avoid CORS
-                fetch(`https://swrp.thatzane.workers.dev/api/v1/proxy/avatar?userId=${payload.user.id}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.data && data.data[0]) {
-                            setAvatarUrl(data.data[0].imageUrl);
-                        }
-                    })
-                    .catch(e => console.error('Failed to fetch avatar', e));
-            } catch (e) {
-                console.error('Failed to parse token');
-            }
+        if (user) {
+            // Fetch avatar via proxy to avoid CORS
+            fetch(`https://swrp.thatzane.workers.dev/api/v1/proxy/avatar?userId=${user.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.data && data.data[0]) {
+                        setAvatarUrl(data.data[0].imageUrl);
+                    }
+                })
+                .catch(e => console.error('Failed to fetch avatar', e));
         }
-    }, []);
+    }, [user]);
 
     return (
         <Router>

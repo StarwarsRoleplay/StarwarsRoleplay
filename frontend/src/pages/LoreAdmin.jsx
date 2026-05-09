@@ -38,17 +38,7 @@ export default function LoreAdmin() {
 
     const token = localStorage.getItem('swrp_token');
 
-    useEffect(() => {
-        if (!token) {
-            navigate('/login');
-            return;
-        }
-
-        fetchWriters();
-    }, [token, navigate]);
-
-    const fetchWriters = () => {
-        setLoading(true);
+    const fetchWriters = React.useCallback(() => {
         fetch('https://swrp.thatzane.workers.dev/api/v1/lore/writers', {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -73,7 +63,16 @@ export default function LoreAdmin() {
         .finally(() => {
             setLoading(false);
         });
-    };
+    }, [token, navigate]);
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+
+        fetchWriters();
+    }, [token, navigate, fetchWriters]);
 
     const handleAddWriter = (e) => {
         e.preventDefault();

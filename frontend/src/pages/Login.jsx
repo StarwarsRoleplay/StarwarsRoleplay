@@ -7,16 +7,21 @@ const REDIRECT_URI = "https://swrp.me/login";
 export default function Login() {
     const location = useLocation();
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        return searchParams.has('code');
+    });
     const [error, setError] = useState(null);
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem('swrp_user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const code = searchParams.get('code');
 
         if (code) {
-            setLoading(true);
             fetch('https://swrp.thatzane.workers.dev/api/v1/auth/callback?code=' + code)
                 .then(res => res.json())
                 .then(data => {
@@ -37,12 +42,6 @@ export default function Login() {
                 .finally(() => {
                     setLoading(false);
                 });
-        } else {
-            // Check if already logged in
-            const savedUser = localStorage.getItem('swrp_user');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-            }
         }
     }, [location, navigate]);
 
