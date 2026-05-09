@@ -28,21 +28,6 @@ const ICON_MAP = {
     '212th': Swords,
 };
 
-// Reliable high-quality sci-fi imagery for the cards
-const CARD_IMAGES = [
-    "https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1558486012-817176f84c6d?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1581822261290-991b38693d1b?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1533587851505-d119e13bf0b4?auto=format&fit=crop&w=800&q=80"
-];
-
 const GAME_LINK = "https://www.roblox.com/games/127198433562944/Coruscant-Roleplay";
 const GROUP_LINK = "https://www.roblox.com/communities/866453521/Star-Wars-Roleplay";
 const DISCORD_LINK = "https://discord.gg/46nvXHe8Ax";
@@ -174,7 +159,7 @@ export default function App() {
                                         <img
                                             alt={faction.name}
                                             className="w-full h-full object-cover grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 scale-105 group-hover:scale-100"
-                                            src={CARD_IMAGES[index % CARD_IMAGES.length]}
+                                            src={`/images/divisions/${faction.id}.png`}
                                         />
                                         <div className="absolute top-4 right-4 z-20 text-white/20 group-hover:text-white/80 transition-colors duration-500">
                                             <FactionIcon className="w-8 h-8" strokeWidth={1.5} />
