@@ -21,7 +21,7 @@ export default function Login() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
-                        setError(data.error + (data.details ? `: ${JSON.stringify(data.details)}` : ''));
+                        setError(data.error + (data.details ? `: ${JSON.stringify(data.details)}` : '') + (data.usedClientId ? ` | ID used: ${data.usedClientId}` : ''));
                     } else {
                         // Save token and user
                         localStorage.setItem('swrp_token', data.token);
