@@ -20,6 +20,21 @@ import LoreAdmin from './pages/LoreAdmin';
 import { GAME_LINK } from './constants';
 
 export default function App() {
+    const [user, setUser] = React.useState(null);
+
+    React.useEffect(() => {
+        const token = localStorage.getItem('swrp_token');
+        if (token) {
+            try {
+                const payloadBase64 = token.split('.')[0];
+                const payload = JSON.parse(atob(payloadBase64));
+                setUser(payload.user);
+            } catch (e) {
+                console.error('Failed to parse token');
+            }
+        }
+    }, []);
+
     return (
         <Router>
             <div className="min-h-screen flex flex-col bg-[#0A0A0A] text-white selection:bg-[#8b1919] selection:text-white antialiased font-inter">
@@ -34,6 +49,40 @@ export default function App() {
                         <Navigation />
 
                         <div className="flex items-center gap-4">
+                            {user ? (
+                                <div className="relative group">
+                                    <button className="flex items-center gap-2 text-white font-mono text-[12px] uppercase tracking-[0.15em] hover:text-[#8b1919] transition-colors">
+                                        <span>{user.displayName}</span>
+                                        <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        </svg>
+                                    </button>
+                                    {/* Dropdown */}
+                                    <div className="absolute right-0 mt-2 w-48 bg-[#0a0a0a] border border-zinc-800 hidden group-hover:block z-50 shadow-xl"
+                                         style={{
+                                             clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)'
+                                         }}
+                                    >
+                                        <Link to="/lore-admin" className="block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase">Lore Admin</Link>
+                                        <button 
+                                            onClick={() => {
+                                                localStorage.removeItem('swrp_token');
+                                                window.location.reload();
+                                            }}
+                                            className="w-full text-left block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Link
+                                    to="/login"
+                                    className="text-white font-mono text-[12px] uppercase tracking-[0.15em] hover:text-[#8b1919] transition-colors"
+                                >
+                                    Login
+                                </Link>
+                            )}
                             <a
                                 href={GAME_LINK}
                                 target="_blank"

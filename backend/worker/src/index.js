@@ -27,6 +27,22 @@ async function verifyUserSession(token, secret) {
     return data.user;
 }
 
+function getCorsHeaders(request) {
+    const allowedOrigins = ['https://swrp.me', 'http://localhost:5173'];
+    const origin = request.headers.get('Origin');
+    const headers = new Headers();
+    
+    if (allowedOrigins.includes(origin)) {
+        headers.set('Access-Control-Allow-Origin', origin);
+    } else {
+        headers.set('Access-Control-Allow-Origin', 'https://swrp.me');
+    }
+    
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return headers;
+}
+
 const GROUP_ID = '866453521';
 const RANKS_OF_INTEREST = [
     'Ownership',
@@ -138,30 +154,33 @@ export default {
           try {
             const staffData = await fetchStaffFromRoblox();
             
-            response = new Response(JSON.stringify(staffData), {
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', // Enable CORS
-                'Cache-Control': 'public, max-age=120', // Cache for 2 minutes
-              },
-            });
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
+            headers.set('Cache-Control', 'public, max-age=120');
+            
+            response = new Response(JSON.stringify(staffData), { headers });
 
             // Store in cache
             ctx.waitUntil(cache.put(cacheKey, response.clone()));
           } catch (error) {
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
+            
             return new Response(JSON.stringify({ error: 'Failed to fetch staff data', message: error.message }), {
               status: 500,
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-              },
+              headers
             });
           }
         } else {
           console.log('Cache hit.');
           // Ensure CORS header is present even on cache hit
-          const newHeaders = new Headers(response.headers);
-          newHeaders.set('Access-Control-Allow-Origin', '*');
+          const newHeaders = getCorsHeaders(request);
+          // Copy existing headers from cached response except CORS
+          for (const [key, value] of response.headers.entries()) {
+              if (key.toLowerCase() !== 'access-control-allow-origin') {
+                  newHeaders.set(key, value);
+              }
+          }
           response = new Response(response.body, { ...response, headers: newHeaders });
         }
 
@@ -172,19 +191,17 @@ export default {
     if (url.pathname === '/api/v1/auth/callback') {
         if (request.method === 'OPTIONS') {
             return new Response(null, {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                }
+                headers: getCorsHeaders(request)
             });
         }
 
         const code = url.searchParams.get('code');
         if (!code) {
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
             return new Response(JSON.stringify({ error: 'Code missing' }), { 
                 status: 400,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         }
         
@@ -210,9 +227,11 @@ export default {
             const tokenData = await tokenResponse.json();
             
             if (tokenData.error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ error: 'Token exchange failed', details: tokenData }), { 
                     status: 400,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             }
             
@@ -235,16 +254,17 @@ export default {
             // Sign session
             const token = await signUserSession(user, env.ROBLOX_AUTH_SECRET);
             
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
             return new Response(JSON.stringify({ user, token }), {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                },
+                headers
             });
         } catch (error) {
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
             return new Response(JSON.stringify({ error: 'Auth failed', message: error.message }), { 
                 status: 500,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         }
     }
@@ -253,19 +273,17 @@ export default {
     if (url.pathname === '/api/v1/auth/user') {
         if (request.method === 'OPTIONS') {
             return new Response(null, {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                }
+                headers: getCorsHeaders(request)
             });
         }
 
         const authHeader = request.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
             return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
                 status: 401,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         }
         
@@ -273,17 +291,18 @@ export default {
         const user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
         
         if (!user) {
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
             return new Response(JSON.stringify({ error: 'Invalid or expired session' }), { 
                 status: 401,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         }
         
+        const headers = getCorsHeaders(request);
+        headers.set('Content-Type', 'application/json');
         return new Response(JSON.stringify({ user }), {
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-            },
+            headers
         });
     }
 
@@ -291,19 +310,17 @@ export default {
     if (url.pathname === '/api/v1/lore/writers') {
         if (request.method === 'OPTIONS') {
             return new Response(null, {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                }
+                headers: getCorsHeaders(request)
             });
         }
 
         const authHeader = request.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
             return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
                 status: 401,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         }
         
@@ -311,9 +328,11 @@ export default {
         const user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
         
         if (!user) {
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
             return new Response(JSON.stringify({ error: 'Invalid or expired session' }), { 
                 status: 401,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                headers
             });
         }
 
@@ -321,13 +340,17 @@ export default {
         if (request.method === 'GET') {
             try {
                 const { results } = await env.DB.prepare("SELECT * FROM lore_writers").all();
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify(results), {
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             } catch (error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { 
                     status: 500,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             }
         }
@@ -337,9 +360,11 @@ export default {
             // Check permissions
             const isAdmin = await isUserAdmin(user.id, env);
             if (!isAdmin) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ error: 'Forbidden' }), { 
                     status: 403,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             }
 
@@ -347,9 +372,11 @@ export default {
             const { username, permissions } = body;
 
             if (!username) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ error: 'Username required' }), { 
                     status: 400,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             }
 
@@ -363,9 +390,11 @@ export default {
                 const lookupData = await userLookup.json();
 
                 if (!lookupData.data || lookupData.data.length === 0) {
+                    const headers = getCorsHeaders(request);
+                    headers.set('Content-Type', 'application/json');
                     return new Response(JSON.stringify({ error: 'User not found on Roblox' }), { 
                         status: 400,
-                        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                        headers
                     });
                 }
 
@@ -383,13 +412,17 @@ export default {
                     Math.floor(Date.now() / 1000)
                 ).run();
 
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ success: true }), {
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             } catch (error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ error: 'Failed to add writer', message: error.message }), { 
                     status: 500,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             }
         }
@@ -399,9 +432,11 @@ export default {
             // Check permissions
             const isAdmin = await isUserAdmin(user.id, env);
             if (!isAdmin) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ error: 'Forbidden' }), { 
                     status: 403,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             }
 
@@ -409,16 +444,20 @@ export default {
             const robloxId = urlObj.searchParams.get('id');
 
             if (!robloxId) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ error: 'ID required' }), { 
                     status: 400,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             }
 
             try {
                 await env.DB.prepare("DELETE FROM lore_writers WHERE roblox_id = ?").bind(robloxId).run();
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
                 return new Response(JSON.stringify({ success: true }), {
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    headers
                 });
             } catch (error) {
                 return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { 

@@ -108,9 +108,28 @@ export default function LoreAdmin() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-                <div className="text-[#8b1919] font-mono text-sm">
-                    ERROR: {error}
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] text-white font-inter">
+                <div className="max-w-md w-full bg-[#0a0a0a] border border-[#8b1919]/50 p-8 flex flex-col items-center gap-6"
+                     style={{
+                         clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)'
+                     }}
+                >
+                    <div className="w-16 h-16 bg-[#8b1919]/10 border border-[#8b1919] flex items-center justify-center text-[#8b1919] text-3xl font-bold font-mono">
+                        !
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <h2 className="text-xl font-black uppercase tracking-tight">Access Denied</h2>
+                        <p className="text-zinc-500 text-sm text-center">
+                            {error}
+                        </p>
+                    </div>
+                    <div className="w-full h-px bg-zinc-800"></div>
+                    <button 
+                        onClick={() => navigate('/')}
+                        className="px-6 py-3 bg-white text-[#0A0A0A] font-mono text-xs uppercase tracking-wider hover:bg-[#8b1919] hover:text-white transition-all duration-300"
+                    >
+                        Return to Base
+                    </button>
                 </div>
             </div>
         );
