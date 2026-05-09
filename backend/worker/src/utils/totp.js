@@ -80,7 +80,7 @@ export async function verifyTOTP(secret, userCode) {
 // Cookie value format: "<expires_unix>.<hmac_hex>"
 // Signed with DOCS_TOTP_SECRET via HMAC-SHA-256.
 
-async function hmacHex(secret, message) {
+export async function hmacHex(secret, message) {
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],

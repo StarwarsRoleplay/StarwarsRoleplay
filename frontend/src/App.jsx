@@ -15,6 +15,7 @@ import Terms from './pages/Terms';
 import Lore from './pages/Lore';
 import Staff from './pages/Staff';
 import Rules from './pages/Rules';
+import Login from './pages/Login';
 import { GAME_LINK } from './constants';
 
 export default function App() {
@@ -55,6 +56,7 @@ export default function App() {
                         <Route path="/lore" element={<Lore />} />
                         <Route path="/staff" element={<Staff />} />
                         <Route path="/rules" element={<Rules />} />
+                        <Route path="/login" element={<Login />} />
                     </Routes>
                 </main>
 

@@ -1,5 +1,31 @@
-import { verifyTOTP, signSession, verifySession } from './utils/totp.js';
+import { verifyTOTP, signSession, verifySession, hmacHex } from './utils/totp.js';
 import { renderDocs } from './utils/docs.js';
+
+async function signUserSession(user, secret, ttlSeconds = 3600) {
+    const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
+    const payload = JSON.stringify({ user, expires });
+    const sig = await hmacHex(secret, payload);
+    const encodedPayload = btoa(payload);
+    return `${encodedPayload}.${sig}`;
+}
+
+async function verifyUserSession(token, secret) {
+    const dot = token.indexOf('.');
+    if (dot === -1) return null;
+    
+    const encodedPayload = token.slice(0, dot);
+    const givenSig = token.slice(dot + 1);
+    
+    const payload = atob(encodedPayload);
+    const expectedSig = await hmacHex(secret, payload);
+    
+    if (expectedSig !== givenSig) return null;
+    
+    const data = JSON.parse(payload);
+    if (Math.floor(Date.now() / 1000) > data.expires) return null;
+    
+    return data.user;
+}
 
 const GROUP_ID = '866453521';
 const RANKS_OF_INTEREST = [
@@ -99,50 +125,167 @@ export default {
       }
     }
 
-    // Handle both root and /api/v1/staff
-    if (url.pathname !== '/api/v1/staff' && url.pathname !== '/') {
-      return new Response('Not Found', { status: 404 });
-    }
+    // Routing
+    if (url.pathname === '/api/v1/staff' || url.pathname === '/') {
+        const cacheUrl = new URL(request.url);
+        const cacheKey = new Request(cacheUrl.toString(), request);
+        const cache = caches.default;
 
-    const cacheUrl = new URL(request.url);
-    const cacheKey = new Request(cacheUrl.toString(), request);
-    const cache = caches.default;
+        let response = await cache.match(cacheKey);
 
-    let response = await cache.match(cacheKey);
+        if (!response) {
+          console.log('Cache miss. Fetching from Roblox.');
+          try {
+            const staffData = await fetchStaffFromRoblox();
+            
+            response = new Response(JSON.stringify(staffData), {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*', // Enable CORS
+                'Cache-Control': 'public, max-age=120', // Cache for 2 minutes
+              },
+            });
 
-    if (!response) {
-      console.log('Cache miss. Fetching from Roblox.');
-      try {
-        const staffData = await fetchStaffFromRoblox();
+            // Store in cache
+            ctx.waitUntil(cache.put(cacheKey, response.clone()));
+          } catch (error) {
+            return new Response(JSON.stringify({ error: 'Failed to fetch staff data', message: error.message }), {
+              status: 500,
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+              },
+            });
+          }
+        } else {
+          console.log('Cache hit.');
+          // Ensure CORS header is present even on cache hit
+          const newHeaders = new Headers(response.headers);
+          newHeaders.set('Access-Control-Allow-Origin', '*');
+          response = new Response(response.body, { ...response, headers: newHeaders });
+        }
+
+        return response;
+    } 
+    
+    // Auth Callback
+    if (url.pathname === '/api/v1/auth/callback') {
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                }
+            });
+        }
+
+        const code = url.searchParams.get('code');
+        if (!code) {
+            return new Response(JSON.stringify({ error: 'Code missing' }), { 
+                status: 400,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
         
-        response = new Response(JSON.stringify(staffData), {
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*', // Enable CORS
-            'Cache-Control': 'public, max-age=120', // Cache for 2 minutes
-          },
-        });
-
-        // Store in cache
-        ctx.waitUntil(cache.put(cacheKey, response.clone()));
-      } catch (error) {
-        return new Response(JSON.stringify({ error: 'Failed to fetch staff data', message: error.message }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
-        });
-      }
-    } else {
-      console.log('Cache hit.');
-      // Ensure CORS header is present even on cache hit
-      const newHeaders = new Headers(response.headers);
-      newHeaders.set('Access-Control-Allow-Origin', '*');
-      response = new Response(response.body, { ...response, headers: newHeaders });
+        const clientId = env.ROBLOX_CLIENT_ID;
+        const clientSecret = env.ROBLOX_AUTH_SECRET;
+        const redirectUri = "https://swrp.me/login"; 
+        
+        try {
+            const tokenResponse = await fetch('https://apis.roblox.com/oauth/v1/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    grant_type: 'authorization_code',
+                    code: code,
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    redirect_uri: redirectUri,
+                }),
+            });
+            
+            const tokenData = await tokenResponse.json();
+            
+            if (tokenData.error) {
+                return new Response(JSON.stringify({ error: 'Token exchange failed', details: tokenData }), { 
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+            
+            // Get user info
+            const userResponse = await fetch('https://apis.roblox.com/oauth/v1/userinfo', {
+                headers: {
+                    'Authorization': `Bearer ${tokenData.access_token}`,
+                },
+            });
+            
+            const userData = await userResponse.json();
+            
+            // Create session
+            const user = {
+                id: userData.sub,
+                username: userData.preferred_username || userData.name,
+                displayName: userData.nickname || userData.name,
+            };
+            
+            // Sign session
+            const token = await signUserSession(user, env.ROBLOX_AUTH_SECRET);
+            
+            return new Response(JSON.stringify({ user, token }), {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                },
+            });
+        } catch (error) {
+            return new Response(JSON.stringify({ error: 'Auth failed', message: error.message }), { 
+                status: 500,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
     }
 
-    return response;
+    // Auth User Info
+    if (url.pathname === '/api/v1/auth/user') {
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                }
+            });
+        }
+
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+                status: 401,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+        
+        const token = authHeader.split(' ')[1];
+        const user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
+        
+        if (!user) {
+            return new Response(JSON.stringify({ error: 'Invalid or expired session' }), { 
+                status: 401,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+        
+        return new Response(JSON.stringify({ user }), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+    }
   },
 };
 
