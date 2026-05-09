@@ -23,7 +23,7 @@ export default function App() {
                 <header className="fixed top-0 w-full z-50 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/10">
                     <div className="flex justify-between items-center w-full px-6 md:px-16 h-20 max-w-[1440px] mx-auto">
                         <div className="text-[32px] font-black tracking-tighter text-white">
-                            STAR WARS RP
+                            SW:RP
                         </div>
 
                         <Navigation />
