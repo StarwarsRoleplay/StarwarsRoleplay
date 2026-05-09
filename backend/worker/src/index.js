@@ -499,11 +499,15 @@ export default {
             try {
                 const slug = url.searchParams.get('slug');
                 const category = url.searchParams.get('category');
+                const id = url.searchParams.get('id');
                 
                 let query = "SELECT * FROM lore_articles";
                 let params = [];
                 
-                if (slug) {
+                if (id) {
+                    query += " WHERE id = ?";
+                    params.push(id);
+                } else if (slug) {
                     query += " WHERE slug = ?";
                     params.push(slug);
                 } else if (category) {
@@ -518,7 +522,7 @@ export default {
                 const headers = getCorsHeaders(request);
                 headers.set('Content-Type', 'application/json');
                 headers.set('Cache-Control', 'public, max-age=60');
-                return new Response(JSON.stringify(results), { headers });
+                return new Response(JSON.stringify(id ? results[0] : results), { headers });
             } catch (error) {
                 const headers = getCorsHeaders(request);
                 headers.set('Content-Type', 'application/json');
@@ -565,6 +569,55 @@ export default {
                     user.username,
                     Math.floor(Date.now() / 1000),
                     Math.floor(Date.now() / 1000)
+                ).run();
+
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ success: true }), { headers });
+            } catch (error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { status: 500, headers });
+            }
+        }
+
+        // PUT: Update article
+        if (request.method === 'PUT') {
+            if (!user) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+            }
+
+            const isAdmin = await isUserAdmin(user.id, env);
+            const permissions = await getUserPermissions(user.id, env);
+            const canWrite = isAdmin || (permissions && permissions.pages && permissions.pages.lore && permissions.pages.lore.includes('write'));
+            
+            if (!canWrite) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+            }
+
+            const body = await request.json();
+            const { id, title, slug, content, category } = body;
+
+            if (!id || !title || !slug || !content || !category) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers });
+            }
+
+            try {
+                await env.DB.prepare(
+                    "UPDATE lore_articles SET title = ?, slug = ?, content = ?, category = ?, updated_at = ? WHERE id = ?"
+                ).bind(
+                    title,
+                    slug,
+                    content,
+                    category,
+                    Math.floor(Date.now() / 1000),
+                    id
                 ).run();
 
                 const headers = getCorsHeaders(request);

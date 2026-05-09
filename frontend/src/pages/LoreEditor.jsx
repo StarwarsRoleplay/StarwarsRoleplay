@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2, Save } from 'lucide-react';
 
 export default function LoreEditor() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const id = searchParams.get('id');
     
     const [draft] = useState(() => {
+        if (id) return {}; // Don't use draft if editing an existing article
         const d = localStorage.getItem('swrp_lore_draft');
         return d ? JSON.parse(d) : {};
     });
@@ -14,7 +17,7 @@ export default function LoreEditor() {
     const [slug, setSlug] = useState(draft.slug || '');
     const [category, setCategory] = useState(draft.category || 'history');
     const [content, setContent] = useState(draft.content || '');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(!!id);
     const [error, setError] = useState(null);
     const [viewMode, setViewMode] = useState('split'); // 'edit', 'preview', 'split'
     const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(!!draft.slug);
@@ -22,8 +25,28 @@ export default function LoreEditor() {
 
     const token = localStorage.getItem('swrp_token');
 
-    // Auto-save to localStorage
+    // Load article if editing
     useEffect(() => {
+        if (id) {
+            fetch(`https://swrp.thatzane.workers.dev/api/v1/lore/articles?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        setTitle(data.title || '');
+                        setSlug(data.slug || '');
+                        setCategory(data.category || 'history');
+                        setContent(data.content || '');
+                        setIsSlugManuallyEdited(true);
+                    }
+                })
+                .catch(err => setError(err.message))
+                .finally(() => setLoading(false));
+        }
+    }, [id]);
+
+    // Auto-save to localStorage (only if NOT editing)
+    useEffect(() => {
+        if (id) return; // Don't auto-save to draft if editing
         const timer = setTimeout(() => {
             if (title || content) {
                 localStorage.setItem('swrp_lore_draft', JSON.stringify({ title, slug, category, content }));
@@ -32,7 +55,7 @@ export default function LoreEditor() {
             }
         }, 1000);
         return () => clearTimeout(timer);
-    }, [title, slug, category, content]);
+    }, [title, slug, category, content, id]);
 
     const handleTitleChange = (e) => {
         const val = e.target.value;
@@ -55,13 +78,16 @@ export default function LoreEditor() {
         }
 
         setLoading(true);
+        const method = id ? 'PUT' : 'POST';
+        const body = id ? { id, title, slug, content, category } : { title, slug, content, category };
+
         fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles', {
-            method: 'POST',
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ title, slug, content, category })
+            body: JSON.stringify(body)
         })
         .then(res => res.json())
         .then(data => {

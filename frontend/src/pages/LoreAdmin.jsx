@@ -33,6 +33,7 @@ const ACTIONS = ['read', 'write', 'admin'];
 export default function UserManagement() {
     const navigate = useNavigate();
     const [writers, setWriters] = useState([]);
+    const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [newUsername, setNewUsername] = useState('');
@@ -73,6 +74,15 @@ export default function UserManagement() {
         });
     }, [token, navigate]);
 
+    const fetchArticles = React.useCallback(() => {
+        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles')
+        .then(res => res.json())
+        .then(data => {
+            setArticles(data);
+        })
+        .catch(err => console.error('Failed to fetch articles', err));
+    }, []);
+
     useEffect(() => {
         if (!token) {
             navigate('/login');
@@ -80,7 +90,8 @@ export default function UserManagement() {
         }
 
         fetchWriters();
-    }, [token, navigate, fetchWriters]);
+        fetchArticles();
+    }, [token, navigate, fetchWriters, fetchArticles]);
 
     const handleAddUser = (e) => {
         e.preventDefault();
@@ -317,6 +328,48 @@ export default function UserManagement() {
                                 </div>
                             );
                         })}
+                    </div>
+                )}
+            </div>
+
+            {/* Articles List */}
+            <div className="w-full flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-lg text-white font-bold uppercase">Lore Articles</h2>
+                    <button
+                        onClick={() => navigate('/lore-editor')}
+                        className="px-4 py-2 bg-[#8b1919]/10 border border-[#8b1919]/40 text-white font-mono text-xs uppercase tracking-wider hover:bg-[#8b1919] transition-all duration-300"
+                    >
+                        New Article
+                    </button>
+                </div>
+                
+                {articles.length === 0 ? (
+                    <div className="text-zinc-600 text-sm font-mono">
+                        No articles found.
+                    </div>
+                ) : (
+                    <div className="bg-[#0a0a0a] border border-zinc-800">
+                        {articles.map(article => (
+                            <div key={article.id} className="border-b border-zinc-900 last:border-0 p-4 flex justify-between items-center">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-white font-bold">{article.title}</span>
+                                    <div className="flex gap-2 text-xs font-mono text-zinc-600">
+                                        <span>Slug: {article.slug}</span>
+                                        <span>|</span>
+                                        <span>Category: {article.category}</span>
+                                        <span>|</span>
+                                        <span>Author: {article.author_name}</span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/lore-editor?id=${article.id}`)}
+                                    className="px-3 py-1 bg-transparent border border-zinc-700 text-zinc-400 font-mono text-xs uppercase hover:border-white hover:text-white transition-colors"
+                                >
+                                    Edit
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
