@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const INGAME_RULES = [
     {
@@ -241,6 +241,21 @@ export default function Rules() {
 
     const data = activeTab === 'ingame' ? INGAME_RULES : COMMUNITY_RULES;
 
+    const scrollToSection = (index) => {
+        const element = document.getElementById(`section-${index}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        setSelectedSection(index);
+    };
+
+    useEffect(() => {
+        // Small delay to ensure elements are rendered after tab switch
+        setTimeout(() => {
+            scrollToSection(0);
+        }, 50);
+    }, [activeTab]);
+
     return (
         <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-16 bg-[#050505]">
             {/* Header */}
@@ -281,7 +296,7 @@ export default function Rules() {
                         {data.map((item, index) => (
                             <button
                                 key={index}
-                                onClick={() => setSelectedSection(index)}
+                                onClick={() => scrollToSection(index)}
                                 className={`w-full text-left p-4 bg-[#0a0a0a] border transition-all duration-300 flex items-center justify-between group ${selectedSection === index ? 'border-[#00f0ff]/50 bg-[#00f0ff]/5' : 'border-white/5 hover:border-[#00f0ff]/30'}`}
                                 style={{
                                     clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)'
@@ -311,39 +326,31 @@ export default function Rules() {
                     <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#00f0ff]"></div>
                     <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#00f0ff]"></div>
 
-                    {selectedSection !== null && data[selectedSection] ? (
-                        <>
-                            {/* Section Header */}
-                            <div className="flex flex-col gap-1 border-b border-[#00f0ff]/10 pb-4">
-                                <div className="font-mono text-[10px] text-[#00f0ff] uppercase tracking-[0.1em]">
-                                    Data Block {String(selectedSection + 1).padStart(2, '0')}
-                                </div>
-                                <h3 className="text-xl text-white font-bold uppercase tracking-wide">
-                                    {data[selectedSection].section}
-                                </h3>
-                            </div>
-
-                            {/* Section Content */}
-                            <div className="flex flex-col gap-4 text-zinc-400 text-sm font-sans leading-relaxed overflow-y-auto custom-scrollbar">
-                                {data[selectedSection].rules.map((rule, idx) => (
-                                    <div key={idx} className="flex gap-4 items-start">
-                                        <span className="text-[#00f0ff] font-mono mt-1">▶</span>
-                                        <p>{rule}</p>
+                    <div className="flex flex-col gap-12 overflow-y-auto pr-4 custom-scrollbar h-[500px]">
+                        {data.map((sectionItem, index) => (
+                            <div key={index} id={`section-${index}`} className="flex flex-col gap-6 scroll-mt-6">
+                                {/* Section Header */}
+                                <div className="flex flex-col gap-1 border-b border-[#00f0ff]/10 pb-4">
+                                    <div className="font-mono text-[10px] text-[#00f0ff] uppercase tracking-[0.1em]">
+                                        Data Block {String(index + 1).padStart(2, '0')}
                                     </div>
-                                ))}
+                                    <h3 className="text-xl text-white font-bold uppercase tracking-wide">
+                                        {sectionItem.section}
+                                    </h3>
+                                </div>
+
+                                {/* Section Content */}
+                                <div className="flex flex-col gap-4 text-zinc-400 text-sm font-sans leading-relaxed">
+                                    {sectionItem.rules.map((rule, idx) => (
+                                        <div key={idx} className="flex gap-4 items-start">
+                                            <span className="text-[#00f0ff] font-mono mt-1">▶</span>
+                                            <p>{rule}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
-                            <div className="w-16 h-16 border-2 border-[#00f0ff]/30 rounded-full flex items-center justify-center animate-pulse">
-                                <span className="text-[#00f0ff] text-2xl font-mono">!</span>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <h3 className="text-white font-bold uppercase tracking-wide">Select a Category</h3>
-                                <p className="text-zinc-600 text-xs font-mono">Awaiting Holocron input...</p>
-                            </div>
-                        </div>
-                    )}
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
