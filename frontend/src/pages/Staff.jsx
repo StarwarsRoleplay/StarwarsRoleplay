@@ -20,15 +20,8 @@ export default function Staff() {
     useEffect(() => {
         const fetchStaff = async () => {
             try {
-                // Try relative path first (good for production or proxy)
-                // Fallback to localhost:5000 if needed (good for local dev)
-                let response;
-                try {
-                    response = await fetch('/api/v1/staff');
-                } catch (e) {
-                    console.log('Relative fetch failed, trying localhost:5000');
-                    response = await fetch('http://localhost:5000/api/v1/staff');
-                }
+                // Fetch from Cloudflare Worker
+                const response = await fetch('https://swrp.thatzane.workers.dev/api/v1/staff');
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch staff data');
