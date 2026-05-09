@@ -114,6 +114,7 @@ function docsGateHTML(error) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    console.log('Request URL:', request.url, 'Method:', request.method);
     
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
@@ -700,45 +701,50 @@ export default {
                 return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { status: 500, headers });
             }
         }
-        
-        // Recommended Items
-        if (url.pathname === '/api/v1/recommended') {
-            const headers = getCorsHeaders(request);
-            headers.set('Content-Type', 'application/json');
+    }
 
-            try {
-                // GET: Fetch recommended items
-                if (request.method === 'GET') {
-                    const result = await env.RECOMMENDED.prepare(
-                        "SELECT value FROM settings WHERE key = 'recommended_items'"
-                    ).first();
-                    return new Response(result ? result.value : '[]', { headers });
-                }
+    // Recommended Items
+    if (url.pathname === '/api/v1/recommended') {
+        const headers = getCorsHeaders(request);
+        headers.set('Content-Type', 'application/json');
 
-                // POST: Update recommended items
-                if (request.method === 'POST') {
-                    if (!user) {
-                        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
-                    }
+        const authHeader = request.headers.get('Authorization');
+        let user = null;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
+        }
 
-                    const isAdmin = await isUserAdmin(user.id, env);
-                    if (!isAdmin) {
-                        return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
-                    }
-
-                    try {
-                        const data = await request.json();
-                        await env.RECOMMENDED.prepare(
-                            "INSERT OR REPLACE INTO settings (key, value) VALUES ('recommended_items', ?)"
-                        ).bind(JSON.stringify(data)).run();
-                        return new Response(JSON.stringify({ success: true }), { headers });
-                    } catch (error) {
-                        return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
-                    }
-                }
-            } catch (error) {
-                return new Response(JSON.stringify({ error: 'Internal Error', message: error.message }), { status: 500, headers });
+        try {
+            // GET: Fetch recommended items
+            if (request.method === 'GET') {
+                return new Response(JSON.stringify([{ type: 'news', title: 'Hardcoded Test', desc: 'If you see this, D1 was the issue' }]), { headers });
             }
+
+            // POST: Update recommended items
+            if (request.method === 'POST') {
+                if (!user) {
+                    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+                }
+
+                const isAdmin = await isUserAdmin(user.id, env);
+                if (!isAdmin) {
+                    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+                }
+
+                try {
+                    const data = await request.json();
+                    await env.RECOMMENDED.prepare(
+                        "INSERT OR REPLACE INTO settings (key, value) VALUES ('recommended_items', ?)"
+                    ).bind(JSON.stringify(data)).run();
+                    return new Response(JSON.stringify({ success: true }), { headers });
+                } catch (error) {
+                    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers });
+                }
+            }
+        } catch (error) {
+            console.error('Recommended error:', error);
+            return new Response(JSON.stringify({ error: 'Internal Error', message: error.message, stack: error.stack }), { status: 500, headers });
         }
     }
 
