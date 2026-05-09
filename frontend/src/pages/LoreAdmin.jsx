@@ -1,6 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const RobloxAvatar = ({ userId, username }) => {
+    const [avatarUrl, setAvatarUrl] = useState(null);
+
+    useEffect(() => {
+        if (!userId) return;
+        fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=48x48&format=Png&isCircular=true`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.data && data.data[0]) {
+                    setAvatarUrl(data.data[0].imageUrl);
+                }
+            })
+            .catch(e => console.error('Failed to fetch avatar', e));
+    }, [userId]);
+
+    if (avatarUrl) {
+        return <img src={avatarUrl} alt={username} className="w-10 h-10 rounded-full border border-zinc-800" />;
+    }
+
+    return (
+        <div className="w-10 h-10 bg-[#151515] flex items-center justify-center font-mono text-sm text-zinc-700 rounded-full border border-zinc-800">
+            {username ? username[0] : '?'}
+        </div>
+    );
+};
+
 export default function LoreAdmin() {
     const navigate = useNavigate();
     const [writers, setWriters] = useState([]);
@@ -208,9 +234,7 @@ export default function LoreAdmin() {
                                  }}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-[#151515] flex items-center justify-center font-mono text-sm text-zinc-700">
-                                        {writer.username[0]}
-                                    </div>
+                                    <RobloxAvatar userId={writer.roblox_id} username={writer.username} />
                                     <div className="flex flex-col">
                                         <span className="text-white font-bold">{writer.display_name}</span>
                                         <span className="text-zinc-500 text-xs">@{writer.username}</span>

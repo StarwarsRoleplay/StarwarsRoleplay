@@ -21,6 +21,7 @@ import { GAME_LINK } from './constants';
 
 export default function App() {
     const [user, setUser] = React.useState(null);
+    const [avatarUrl, setAvatarUrl] = React.useState(null);
 
     React.useEffect(() => {
         // Check for OAuth code in URL (GitHub Pages fallback)
@@ -40,6 +41,16 @@ export default function App() {
                 const payloadBase64 = token.split('.')[0];
                 const payload = JSON.parse(atob(payloadBase64));
                 setUser(payload.user);
+                
+                // Fetch avatar
+                fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${payload.user.id}&size=48x48&format=Png&isCircular=true`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.data && data.data[0]) {
+                            setAvatarUrl(data.data[0].imageUrl);
+                        }
+                    })
+                    .catch(e => console.error('Failed to fetch avatar', e));
             } catch (e) {
                 console.error('Failed to parse token');
             }
@@ -62,7 +73,14 @@ export default function App() {
                         <div className="flex items-center gap-4">
                             {user ? (
                                 <div className="relative group">
-                                    <button className="flex items-center gap-2 text-white font-mono text-[12px] uppercase tracking-[0.15em] hover:text-[#8b1919] transition-colors">
+                                    <button className="flex items-center gap-3 text-white font-mono text-[12px] uppercase tracking-[0.15em] hover:text-[#8b1919] transition-colors">
+                                        {avatarUrl ? (
+                                            <img src={avatarUrl} alt={user.displayName} className="w-6 h-6 rounded-full border border-zinc-700" />
+                                        ) : (
+                                            <div className="w-6 h-6 bg-[#151515] flex items-center justify-center rounded-full border border-zinc-700 font-mono text-[10px]">
+                                                {user.displayName[0]}
+                                            </div>
+                                        )}
                                         <span>{user.displayName}</span>
                                         <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
                                             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />

@@ -27,8 +27,8 @@ export default function Login() {
                         localStorage.setItem('swrp_token', data.token);
                         localStorage.setItem('swrp_user', JSON.stringify(data.user));
                         setUser(data.user);
-                        // Clear query params
-                        navigate('/login', { replace: true });
+                        // Redirect to home page and force reload to update App.jsx state
+                        window.location.href = 'https://swrp.me/#/';
                     }
                 })
                 .catch(err => {
