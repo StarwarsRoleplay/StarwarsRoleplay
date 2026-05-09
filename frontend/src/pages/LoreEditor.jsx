@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2 } from 'lucide-react';
 
 export default function LoreEditor() {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ export default function LoreEditor() {
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [viewMode, setViewMode] = useState('split'); // 'edit', 'preview', 'split'
 
     const token = localStorage.getItem('swrp_token');
 
@@ -38,6 +40,39 @@ export default function LoreEditor() {
         })
         .catch(err => setError(err.message))
         .finally(() => setLoading(false));
+    };
+
+    const insertText = (before, after = '') => {
+        const textarea = document.getElementById('content-textarea');
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        const selected = text.substring(start, end);
+        
+        const newText = text.substring(0, start) + before + selected + after + text.substring(end);
+        setContent(newText);
+        
+        // Reset cursor position after React render
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(start + before.length, end + before.length);
+        }, 0);
+    };
+
+    const parseMarkdown = (text) => {
+        if (!text) return '';
+        let html = text
+            .replace(/^### (.*$)/gim, '<h3 class="text-white font-bold text-lg mt-4 mb-2">$1</h3>')
+            .replace(/^## (.*$)/gim, '<h2 class="text-white font-bold text-xl mt-4 mb-2">$1</h2>')
+            .replace(/^# (.*$)/gim, '<h1 class="text-white font-bold text-2xl mt-4 mb-2">$1</h1>')
+            .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+            .replace(/\*(.*)\*/gim, '<em>$1</em>')
+            .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" class="text-[#8b1919] hover:underline" target="_blank">$1</a>')
+            .replace(/^- (.*$)/gim, '<li class="ml-4 text-zinc-300">$1</li>')
+            .replace(/\n/gim, '<br />');
+        return html;
     };
 
     return (
@@ -98,15 +133,41 @@ export default function LoreEditor() {
                     </select>
                 </div>
 
-                <div>
-                    <label className="block text-zinc-500 text-xs font-mono uppercase mb-1">Content</label>
-                    <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="Write your lore article here..."
-                        rows={10}
-                        className="w-full bg-[#111] border border-zinc-800 text-white p-3 text-sm focus:border-[#8b1919] outline-none transition-colors font-mono"
-                    />
+                {/* Editor Toolbar & Split View */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center bg-[#111] border border-zinc-800 p-2">
+                        <div className="flex gap-2">
+                            <button type="button" onClick={() => insertText('**', '**')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Bold"><Bold size={16} /></button>
+                            <button type="button" onClick={() => insertText('*', '*')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Italic"><Italic size={16} /></button>
+                            <button type="button" onClick={() => insertText('# ')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="H1"><Heading1 size={16} /></button>
+                            <button type="button" onClick={() => insertText('## ')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="H2"><Heading2 size={16} /></button>
+                            <button type="button" onClick={() => insertText('- ')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="List"><List size={16} /></button>
+                            <button type="button" onClick={() => insertText('[', '](url)')} className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white" title="Link"><LinkIcon size={16} /></button>
+                        </div>
+                        <div className="flex gap-2 text-xs font-mono text-zinc-500">
+                            <button type="button" onClick={() => setViewMode('edit')} className={`px-2 py-1 ${viewMode === 'edit' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}><Edit2 size={14} /></button>
+                            <button type="button" onClick={() => setViewMode('preview')} className={`px-2 py-1 ${viewMode === 'preview' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}><Eye size={14} /></button>
+                            <button type="button" onClick={() => setViewMode('split')} className={`px-2 py-1 ${viewMode === 'split' ? 'text-[#8b1919] border-b border-[#8b1919]' : ''}`}>Split</button>
+                        </div>
+                    </div>
+
+                    <div className={`grid ${viewMode === 'split' ? 'grid-cols-2' : 'grid-cols-1'} gap-4 min-h-[400px]`}>
+                        {(viewMode === 'edit' || viewMode === 'split') && (
+                            <textarea
+                                id="content-textarea"
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                placeholder="Write your lore article here in Markdown..."
+                                className="w-full bg-[#111] border border-zinc-800 text-white p-4 text-sm focus:border-[#8b1919] outline-none transition-colors font-mono resize-none"
+                            />
+                        )}
+                        {(viewMode === 'preview' || viewMode === 'split') && (
+                            <div 
+                                className="w-full bg-[#0a0a0a] border border-zinc-800 p-4 text-sm text-zinc-300 font-inter overflow-auto"
+                                dangerouslySetInnerHTML={{ __html: parseMarkdown(content) }}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center">
