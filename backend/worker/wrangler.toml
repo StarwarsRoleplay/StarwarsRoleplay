@@ -1,3 +1,8 @@
 name = "swrp"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "swrp_lore"
+database_id = "445da21d-ecea-452e-8c43-6c355547695b"

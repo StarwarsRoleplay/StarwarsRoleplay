@@ -286,6 +286,148 @@ export default {
             },
         });
     }
+
+    // Lore Writers List
+    if (url.pathname === '/api/v1/lore/writers') {
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                }
+            });
+        }
+
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+                status: 401,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+        
+        const token = authHeader.split(' ')[1];
+        const user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
+        
+        if (!user) {
+            return new Response(JSON.stringify({ error: 'Invalid or expired session' }), { 
+                status: 401,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            });
+        }
+
+        // GET: List writers
+        if (request.method === 'GET') {
+            try {
+                const { results } = await env.DB.prepare("SELECT * FROM lore_writers").all();
+                return new Response(JSON.stringify(results), {
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            } catch (error) {
+                return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { 
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+        }
+
+        // POST: Add writer
+        if (request.method === 'POST') {
+            // Check permissions
+            const isAdmin = await isUserAdmin(user.id, env);
+            if (!isAdmin) {
+                return new Response(JSON.stringify({ error: 'Forbidden' }), { 
+                    status: 403,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+
+            const body = await request.json();
+            const { username, permissions } = body;
+
+            if (!username) {
+                return new Response(JSON.stringify({ error: 'Username required' }), { 
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+
+            // Lookup user ID by username
+            try {
+                const userLookup = await fetch('https://users.roblox.com/v1/usernames/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
+                });
+                const lookupData = await userLookup.json();
+
+                if (!lookupData.data || lookupData.data.length === 0) {
+                    return new Response(JSON.stringify({ error: 'User not found on Roblox' }), { 
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                    });
+                }
+
+                const targetUser = lookupData.data[0];
+
+                // Insert into DB
+                await env.DB.prepare(
+                    "INSERT INTO lore_writers (roblox_id, username, display_name, permissions, added_by, added_at) VALUES (?, ?, ?, ?, ?, ?)"
+                ).bind(
+                    String(targetUser.id),
+                    targetUser.name,
+                    targetUser.displayName,
+                    permissions || 'write',
+                    user.username,
+                    Math.floor(Date.now() / 1000)
+                ).run();
+
+                return new Response(JSON.stringify({ success: true }), {
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            } catch (error) {
+                return new Response(JSON.stringify({ error: 'Failed to add writer', message: error.message }), { 
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+        }
+
+        // DELETE: Remove writer
+        if (request.method === 'DELETE') {
+            // Check permissions
+            const isAdmin = await isUserAdmin(user.id, env);
+            if (!isAdmin) {
+                return new Response(JSON.stringify({ error: 'Forbidden' }), { 
+                    status: 403,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+
+            const urlObj = new URL(request.url);
+            const robloxId = urlObj.searchParams.get('id');
+
+            if (!robloxId) {
+                return new Response(JSON.stringify({ error: 'ID required' }), { 
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+
+            try {
+                await env.DB.prepare("DELETE FROM lore_writers WHERE roblox_id = ?").bind(robloxId).run();
+                return new Response(JSON.stringify({ success: true }), {
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            } catch (error) {
+                return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { 
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                });
+            }
+        }
+    }
   },
 };
 
@@ -411,4 +553,29 @@ async function fetchStaffFromRoblox() {
     });
 
     return processedStaff;
+}
+
+async function isUserAdmin(userId, env) {
+    // Website Maintainer hardcoded
+    if (userId === '1445263976') return true;
+    
+    // Check Roblox rank
+    try {
+        const response = await fetch(`https://groups.roblox.com/v2/users/${userId}/groups/roles`);
+        const data = await response.json();
+        
+        if (data.data) {
+            const group = data.data.find(g => g.group.id === parseInt(GROUP_ID));
+            if (group) {
+                const rankName = group.role.name;
+                if (rankName === 'SWRP : Project Lead' || rankName === 'Ownership') {
+                    return true;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking admin rank:', error);
+    }
+    
+    return false;
 }
