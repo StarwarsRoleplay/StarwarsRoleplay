@@ -1,19 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GAME_LINK, GROUP_LINK } from '../constants';
-import { Canvas } from '@react-three/fiber';
-import { useGLTF, OrbitControls } from '@react-three/drei';
-
-function StormtrooperModel() {
-    const { scene } = useGLTF('/images/3d/stormtrooper.glb');
-    return (
-        <primitive 
-            object={scene} 
-            scale={37.5}
-            position={[0, -2, 0]}
-        />
-    );
-}
 
 export default function Hangar() {
     return (
@@ -48,16 +35,6 @@ export default function Hangar() {
                             Join the Republic
                         </a>
                     </div>
-                </div>
-                
-                <div className="col-span-12 md:col-span-4 flex items-center justify-center h-[400px] md:h-full">
-                    <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-                        <ambientLight intensity={0.7} />
-                        <pointLight position={[10, 10, 10]} intensity={1.5} />
-                        <pointLight position={[-10, -10, -10]} intensity={1} color="#8b1919" />
-                        <StormtrooperModel />
-                        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={2} />
-                    </Canvas>
                 </div>
             </div>
 

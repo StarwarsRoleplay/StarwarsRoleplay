@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Book, FileText, Globe, Shield, ArrowLeft } from 'lucide-react';
-import { Canvas } from '@react-three/fiber';
-import { useGLTF, OrbitControls } from '@react-three/drei';
-
-function HolocronModel({ onSelect }) {
-    const { scene } = useGLTF('/images/3d/jedi_holocron.glb');
-    return (
-        <primitive 
-            object={scene} 
-            scale={14}
-            onClick={() => onSelect('history')}
-            className="cursor-pointer"
-        />
-    );
-}
 
 export default function Lore() {
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -207,17 +193,6 @@ export default function Lore() {
                 </div>
             ) : (
                 <>
-                    {/* 3D Holocron */}
-                    <div className="w-full h-[500px] my-8 bg-[#0a0a0a] border border-zinc-800">
-                        <Canvas camera={{ position: [0, 0, 3], fov: 45 }}>
-                            <ambientLight intensity={0.7} />
-                            <pointLight position={[10, 10, 10]} intensity={1.5} />
-                            <pointLight position={[-10, -10, -10]} intensity={1} color="#8b1919" />
-                            <HolocronModel onSelect={setSelectedCategory} />
-                            <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={4} />
-                        </Canvas>
-                    </div>
-
                     {/* Categories */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {categories.map(cat => {
