@@ -115,6 +115,12 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+        const headers = getCorsHeaders(request);
+        return new Response(null, { headers, status: 204 });
+    }
+    
     // Avatar Proxy Route
     if (url.pathname === '/api/v1/proxy/avatar') {
         const userId = url.searchParams.get('userId');
