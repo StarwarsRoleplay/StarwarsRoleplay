@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 const RANK_ORDER = [
-    'Website Maintainer',
     'SWRP : Project Lead',
     'Manager',
     'Team Management',
@@ -66,6 +65,49 @@ export default function Staff() {
 
             {staff && (
                 <div className="flex flex-col gap-16">
+                    {/* Website Maintainer Special Section */}
+                    {staff["Website Maintainer"] && staff["Website Maintainer"][0] && (
+                        <div className="relative group bg-[#0d0a0a] border border-[#8b1919]/30 p-6 flex flex-col md:flex-row items-center gap-6 transition-all duration-300 hover:border-[#8b1919]/60"
+                             style={{
+                                 clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%)'
+                             }}
+                        >
+                            {/* Corner glow */}
+                            <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#8b1919] opacity-50 group-hover:opacity-100 transition-opacity duration-300" 
+                                 style={{ clipPath: 'polygon(100% 0, 0 100%, 100% 100%)' }}></div>
+                            
+                            {/* Avatar */}
+                            <div className="relative w-20 h-20 shrink-0">
+                                <div className="absolute inset-0 border-2 border-[#8b1919]"></div>
+                                {staff["Website Maintainer"][0].avatarUrl ? (
+                                    <img src={staff["Website Maintainer"][0].avatarUrl} alt={staff["Website Maintainer"][0].displayName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-[#151515] flex items-center justify-center font-mono text-sm text-zinc-700">
+                                        N/A
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex flex-col gap-2 flex-1 text-center md:text-left">
+                                <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em]">
+                                    System Developer & Maintainer
+                                </div>
+                                <h3 className="text-2xl text-white font-bold uppercase tracking-wide">
+                                    {staff["Website Maintainer"][0].displayName}
+                                </h3>
+                                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-zinc-400 text-sm font-mono">
+                                    <span>@{staff["Website Maintainer"][0].name}</span>
+                                    <span className="hidden md:inline text-zinc-700">//</span>
+                                    <span className="text-[#8b1919] font-bold">Discord: @thatzane</span>
+                                </div>
+                                <p className="text-zinc-500 text-xs mt-1">
+                                    Contact me directly for website issues, bugs, or feature requests.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {RANK_ORDER.map(rank => {
                         const members = staff[rank] || [];
                         if (members.length === 0) return null;
