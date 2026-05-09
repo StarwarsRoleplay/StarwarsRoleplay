@@ -17,4 +17,7 @@ app.get('/', (req, res) => {
 const factionsRouter = require('./src/routes/factions');
 app.use('/api/v1/factions', factionsRouter);
 
+const staffRouter = require('./src/routes/staff');
+app.use('/api/v1/staff', staffRouter);
+
 module.exports = app;
