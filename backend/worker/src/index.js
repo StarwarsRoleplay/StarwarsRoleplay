@@ -229,7 +229,7 @@ export default {
             if (tokenData.error) {
                 const headers = getCorsHeaders(request);
                 headers.set('Content-Type', 'application/json');
-                return new Response(JSON.stringify({ error: 'Token exchange failed', details: tokenData }), { 
+                return new Response(JSON.stringify({ error: 'Token exchange failed', details: tokenData, usedClientId: clientId }), { 
                     status: 400,
                     headers
                 });

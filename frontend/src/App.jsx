@@ -27,6 +27,8 @@ export default function App() {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         if (code) {
+            // Clear search params from URL bar so it doesn't loop on reload
+            window.history.replaceState({}, '', window.location.pathname);
             // Redirect to the hash route
             window.location.href = `https://swrp.me/#/login?code=${code}`;
             return;
