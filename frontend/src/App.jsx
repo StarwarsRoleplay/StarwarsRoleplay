@@ -291,6 +291,75 @@ function HolonetPage() {
     );
 }
 
+function PrivacyPage() {
+    return (
+        <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-8">
+            <div className="flex flex-col gap-2 border-l-4 border-white pl-6">
+                <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#8b1919]"></span>
+                    LEGAL
+                </div>
+                <h2 className="text-[32px] text-white font-bold uppercase leading-tight">
+                    Privacy Policy
+                </h2>
+            </div>
+            <div className="font-mono text-[14px] text-[#c4c7c8] border-l-2 border-[#8b1919] pl-4 py-1 leading-[20px] max-w-4xl">
+                <p className="mb-4">This website is a static site intended for roleplay and community information. We do not collect, store, or process any personal data from visitors.</p>
+                <p className="mb-4">When you click on external links (such as Discord or Roblox), you are leaving this site and are subject to the privacy policies of those third-party platforms.</p>
+                <p className="mb-4">Since we do not collect data, no cookies are used for tracking purposes.</p>
+                <p className="font-bold text-white">[Note: This is a placeholder. You must update this with your actual legal privacy policy if you start collecting data.]</p>
+            </div>
+        </section>
+    );
+}
+
+function LegalPage() {
+    return (
+        <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-8">
+            <div className="flex flex-col gap-2 border-l-4 border-white pl-6">
+                <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#8b1919]"></span>
+                    LEGAL
+                </div>
+                <h2 className="text-[32px] text-white font-bold uppercase leading-tight">
+                    Legal Notice / Impressum
+                </h2>
+            </div>
+            <div className="font-mono text-[14px] text-[#c4c7c8] border-l-2 border-[#8b1919] pl-4 py-1 leading-[20px] max-w-4xl">
+                <p className="mb-4">Information required by law (e.g., German TMG § 5):</p>
+                <p className="mb-2"><strong>Operator:</strong> [Your Name / Community Name]</p>
+                <p className="mb-2"><strong>Address:</strong> [Your Address]</p>
+                <p className="mb-2"><strong>Contact:</strong> [Your Email]</p>
+                <p className="mb-4"><strong>Represented by:</strong> [Representative Name if applicable]</p>
+                <p className="font-bold text-white">[Note: This is a placeholder. In many European countries, especially Germany, an Impressum with real contact details is strictly required by law.]</p>
+            </div>
+        </section>
+    );
+}
+
+function TermsPage() {
+    return (
+        <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-8">
+            <div className="flex flex-col gap-2 border-l-4 border-white pl-6">
+                <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#8b1919]"></span>
+                    LEGAL
+                </div>
+                <h2 className="text-[32px] text-white font-bold uppercase leading-tight">
+                    Terms of Service
+                </h2>
+            </div>
+            <div className="font-mono text-[14px] text-[#c4c7c8] border-l-2 border-[#8b1919] pl-4 py-1 leading-[20px] max-w-4xl">
+                <p className="mb-4">By accessing this website, you agree to the following terms:</p>
+                <p className="mb-4">1. This site is for entertainment and community purposes related to the Star Wars Roleplay group on Roblox.</p>
+                <p className="mb-4">2. All Star Wars assets, names, and logos are property of Disney/Lucasfilm. This is a fan site.</p>
+                <p className="mb-4">3. Respect other community members when interacting on linked platforms like Discord.</p>
+                <p className="font-bold text-white">[Note: This is a placeholder. Update with your actual terms.]</p>
+            </div>
+        </section>
+    );
+}
+
 export default function App() {
     return (
         <Router>
@@ -323,6 +392,9 @@ export default function App() {
                         <Route path="/" element={<HangarPage />} />
                         <Route path="/divisions" element={<DivisionsPage />} />
                         <Route path="/holonet" element={<HolonetPage />} />
+                        <Route path="/privacy" element={<PrivacyPage />} />
+                        <Route path="/legal" element={<LegalPage />} />
+                        <Route path="/terms" element={<TermsPage />} />
                     </Routes>
                 </main>
 
@@ -333,9 +405,9 @@ export default function App() {
                             © {new Date().getFullYear()} GRAND ARMY OF THE REPUBLIC. ALL RIGHTS RESERVED.
                         </div>
                         <div className="flex flex-wrap justify-center gap-8 font-mono text-[14px] text-[#8e9192]">
-                            <a className="hover:text-[#ffb3ac] transition-colors" href="#">Enlistment Privacy</a>
-                            <a className="hover:text-[#ffb3ac] transition-colors" href="#">Sector Security Protocols</a>
-                            <a className="hover:text-[#ffb3ac] transition-colors" href="#">Holonet Terms</a>
+                            <Link className="hover:text-[#ffb3ac] transition-colors" to="/privacy">Privacy Policy</Link>
+                            <Link className="hover:text-[#ffb3ac] transition-colors" to="/legal">Legal Notice</Link>
+                            <Link className="hover:text-[#ffb3ac] transition-colors" to="/terms">Terms of Service</Link>
                         </div>
                     </div>
                 </footer>
