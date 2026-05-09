@@ -418,7 +418,7 @@ export default {
                     String(targetUser.id),
                     targetUser.name,
                     targetUser.displayName,
-                    permissions || 'write',
+                    typeof permissions === 'object' ? JSON.stringify(permissions) : (permissions || 'write'),
                     user.username,
                     Math.floor(Date.now() / 1000)
                 ).run();
@@ -475,6 +475,105 @@ export default {
                     status: 500,
                     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
                 });
+            }
+        }
+    }
+
+    // Lore Articles
+    if (url.pathname === '/api/v1/lore/articles') {
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: getCorsHeaders(request)
+            });
+        }
+
+        const authHeader = request.headers.get('Authorization');
+        let user = null;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
+        }
+
+        // GET: List or search articles
+        if (request.method === 'GET') {
+            try {
+                const slug = url.searchParams.get('slug');
+                const category = url.searchParams.get('category');
+                
+                let query = "SELECT * FROM lore_articles";
+                let params = [];
+                
+                if (slug) {
+                    query += " WHERE slug = ?";
+                    params.push(slug);
+                } else if (category) {
+                    query += " WHERE category = ?";
+                    params.push(category);
+                }
+                
+                query += " ORDER BY created_at DESC";
+                
+                const { results } = await env.DB.prepare(query).bind(...params).all();
+                
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                headers.set('Cache-Control', 'public, max-age=60');
+                return new Response(JSON.stringify(results), { headers });
+            } catch (error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { status: 500, headers });
+            }
+        }
+
+        // POST: Create article
+        if (request.method === 'POST') {
+            if (!user) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+            }
+
+            const isAdmin = await isUserAdmin(user.id, env);
+            const permissions = await getUserPermissions(user.id, env);
+            const canWrite = isAdmin || (permissions && permissions.pages && permissions.pages.lore && permissions.pages.lore.includes('write'));
+            
+            if (!canWrite) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+            }
+
+            const body = await request.json();
+            const { title, slug, content, category } = body;
+
+            if (!title || !slug || !content || !category) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers });
+            }
+
+            try {
+                await env.DB.prepare(
+                    "INSERT INTO lore_articles (title, slug, content, category, author_id, author_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                ).bind(
+                    title,
+                    slug,
+                    content,
+                    category,
+                    String(user.id),
+                    user.username,
+                    Math.floor(Date.now() / 1000),
+                    Math.floor(Date.now() / 1000)
+                ).run();
+
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ success: true }), { headers });
+            } catch (error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { status: 500, headers });
             }
         }
     }
@@ -628,4 +727,21 @@ async function isUserAdmin(userId, env) {
     }
     
     return false;
+}
+
+async function getUserPermissions(userId, env) {
+    try {
+        const { results } = await env.DB.prepare("SELECT permissions FROM lore_writers WHERE roblox_id = ?").bind(String(userId)).all();
+        if (results && results.length > 0) {
+            const perms = results[0].permissions;
+            if (perms.startsWith('{')) {
+                return JSON.parse(perms);
+            }
+            // Fallback for old simple permissions
+            return { pages: { lore: [perms] } };
+        }
+    } catch (error) {
+        console.error('Error fetching permissions:', error);
+    }
+    return null;
 }

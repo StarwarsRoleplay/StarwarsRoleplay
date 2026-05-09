@@ -17,6 +17,7 @@ import Staff from './pages/Staff';
 import Rules from './pages/Rules';
 import Login from './pages/Login';
 import LoreAdmin from './pages/LoreAdmin';
+import LoreEditor from './pages/LoreEditor';
 import { GAME_LINK } from './constants';
 
 export default function App() {
@@ -153,6 +154,7 @@ export default function App() {
                         <Route path="/rules" element={<Rules />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/lore-admin" element={<LoreAdmin />} />
+                        <Route path="/lore-editor" element={<LoreEditor />} />
                     </Routes>
                 </main>
 
