@@ -115,10 +115,6 @@ export default function App() {
                                             </svg>
                                             Logout
                                         </button>
-                                            className="w-full text-left block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900"
-                                        >
-                                            Logout
-                                        </button>
                                     </div>
                                 </div>
                             ) : (
