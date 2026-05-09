@@ -1,4 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { useGLTF, OrbitControls } from '@react-three/drei';
+
+function MandoHelmetModel() {
+    const { scene } = useGLTF('/images/3d/mandalorian_helmet.glb');
+    return (
+        <primitive 
+            object={scene} 
+            scale={2.5}
+        />
+    );
+}
 
 const INGAME_RULES = [
     {
@@ -258,6 +270,17 @@ export default function Rules() {
 
     return (
         <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-16 bg-[#050505]">
+            {/* 3D Model */}
+            <div className="w-full h-[200px] bg-[#0a0a0a] border border-zinc-800">
+                <Canvas camera={{ position: [0, 0, 3], fov: 45 }}>
+                    <ambientLight intensity={0.7} />
+                    <pointLight position={[10, 10, 10]} intensity={1.5} />
+                    <pointLight position={[-10, -10, -10]} intensity={1} color="#00f0ff" />
+                    <MandoHelmetModel />
+                    <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={4} />
+                </Canvas>
+            </div>
+
             {/* Header */}
             <div className="flex flex-col gap-2 border-l-4 border-[#00f0ff] pl-6">
                 <div className="font-mono text-[10px] font-medium text-[#00f0ff] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
