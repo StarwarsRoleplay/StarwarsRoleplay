@@ -707,11 +707,6 @@ export default {
             headers.set('Content-Type', 'application/json');
 
             try {
-                // Ensure table exists
-                await env.RECOMMENDED.prepare(
-                    "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)"
-                ).run();
-
                 // GET: Fetch recommended items
                 if (request.method === 'GET') {
                     const result = await env.RECOMMENDED.prepare(
