@@ -6,7 +6,7 @@ const RobloxAvatar = ({ userId, username }) => {
 
     useEffect(() => {
         if (!userId) return;
-        fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=48x48&format=Png&isCircular=true`)
+        fetch(`https://swrp.thatzane.workers.dev/api/v1/proxy/avatar?userId=${userId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.data && data.data[0]) {

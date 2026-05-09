@@ -22,6 +22,7 @@ import { GAME_LINK } from './constants';
 export default function App() {
     const [user, setUser] = React.useState(null);
     const [avatarUrl, setAvatarUrl] = React.useState(null);
+    const [dropdownOpen, setDropdownOpen] = React.useState(false);
 
     React.useEffect(() => {
         // Check for OAuth code in URL (GitHub Pages fallback)
@@ -42,8 +43,8 @@ export default function App() {
                 const payload = JSON.parse(atob(payloadBase64));
                 setUser(payload.user);
                 
-                // Fetch avatar
-                fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${payload.user.id}&size=48x48&format=Png&isCircular=true`)
+                // Fetch avatar via proxy to avoid CORS
+                fetch(`https://swrp.thatzane.workers.dev/api/v1/proxy/avatar?userId=${payload.user.id}`)
                     .then(res => res.json())
                     .then(data => {
                         if (data.data && data.data[0]) {
@@ -72,32 +73,48 @@ export default function App() {
 
                         <div className="flex items-center gap-4">
                             {user ? (
-                                <div className="relative group">
-                                    <button className="flex items-center gap-3 text-white font-mono text-[12px] uppercase tracking-[0.15em] hover:text-[#8b1919] transition-colors">
+                                <div className="relative">
+                                    <button 
+                                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                                        className="flex items-center gap-3 text-white font-mono text-[12px] uppercase tracking-[0.15em] hover:text-[#8b1919] transition-colors"
+                                    >
                                         {avatarUrl ? (
-                                            <img src={avatarUrl} alt={user.displayName} className="w-6 h-6 rounded-full border border-zinc-700" />
+                                            <img src={avatarUrl} alt={user.displayName} className="w-8 h-8 rounded-sm border border-[#8b1919]" />
                                         ) : (
-                                            <div className="w-6 h-6 bg-[#151515] flex items-center justify-center rounded-full border border-zinc-700 font-mono text-[10px]">
+                                            <div className="w-8 h-8 bg-[#151515] flex items-center justify-center rounded-sm border border-[#8b1919] font-mono text-[10px]">
                                                 {user.displayName[0]}
                                             </div>
                                         )}
                                         <span>{user.displayName}</span>
-                                        <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                        <svg className={`w-4 h-4 fill-current transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20">
                                             <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                                         </svg>
                                     </button>
                                     {/* Dropdown */}
-                                    <div className="absolute right-0 mt-2 w-48 bg-[#0a0a0a] border border-zinc-800 hidden group-hover:block z-50 shadow-xl"
+                                    <div className={`absolute right-0 mt-2 w-48 bg-[#0a0a0a] border border-zinc-800 ${dropdownOpen ? 'block' : 'hidden'} z-50 shadow-xl`}
                                          style={{
                                              clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)'
                                          }}
                                     >
-                                        <Link to="/lore-admin" className="block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase">Lore Admin</Link>
+                                        <Link 
+                                            to="/lore-admin" 
+                                            className="block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase"
+                                            onClick={() => setDropdownOpen(false)}
+                                        >
+                                            Lore Admin
+                                        </Link>
                                         <button 
                                             onClick={() => {
                                                 localStorage.removeItem('swrp_token');
                                                 window.location.reload();
                                             }}
+                                            className="w-full text-left block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900 flex items-center gap-2"
+                                        >
+                                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                                <path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012 2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2 0 012-2h9z" />
+                                            </svg>
+                                            Logout
+                                        </button>
                                             className="w-full text-left block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900"
                                         >
                                             Logout

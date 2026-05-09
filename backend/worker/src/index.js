@@ -115,6 +115,17 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     
+    // Avatar Proxy Route
+    if (url.pathname === '/api/v1/proxy/avatar') {
+        const userId = url.searchParams.get('userId');
+        const robloxRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=48x48&format=Png&isCircular=true`);
+        const data = await robloxRes.json();
+        
+        const headers = getCorsHeaders(request);
+        headers.set('Content-Type', 'application/json');
+        return new Response(JSON.stringify(data), { headers });
+    }
+    
     // ── Docs Routes ──────────────────────────────────────────────────────────
     if (url.pathname === '/api/docs') {
       if (request.method === 'GET') {
