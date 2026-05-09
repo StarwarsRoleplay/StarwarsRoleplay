@@ -36,6 +36,47 @@ export default function Hangar() {
                         </a>
                     </div>
                 </div>
+                
+                <div className="col-span-12 md:col-span-4 flex flex-col gap-6 bg-[#0a0a0a]/80 border border-white/10 p-6 backdrop-blur-sm h-[500px]">
+                    <div className="font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[#8b1919] animate-pulse"></span>
+                        INCOMING TRANSMISSIONS
+                    </div>
+                    <h3 className="text-xl text-white font-bold uppercase tracking-wide border-b border-white/10 pb-2">
+                        Recommended
+                    </h3>
+                    
+                    {/* Netflix-like list */}
+                    <div className="flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
+                        {/* Item 1 */}
+                        <div className="group relative flex flex-col gap-2 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-300 p-3 cursor-pointer">
+                            <div className="aspect-video bg-[#202020] overflow-hidden">
+                                <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
+                                    [ TRANSMISSION IMAGE ]
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className="font-mono text-[10px] text-[#8b1919]">NEWS</span>
+                                <h4 className="text-sm text-white font-bold group-hover:text-[#8b1919] transition-colors">Sector 4 Update</h4>
+                                <p className="text-xs text-zinc-500 line-clamp-2">New security protocols active. Check your clearance level.</p>
+                            </div>
+                        </div>
+                        
+                        {/* Item 2 */}
+                        <div className="group relative flex flex-col gap-2 bg-[#151515] border border-white/5 hover:border-[#8b1919]/50 transition-all duration-300 p-3 cursor-pointer">
+                            <div className="aspect-video bg-[#202020] overflow-hidden">
+                                <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
+                                    [ EQUIPMENT IMAGE ]
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <span className="font-mono text-[10px] text-[#8b1919]">STORE</span>
+                                <h4 className="text-sm text-white font-bold group-hover:text-[#8b1919] transition-colors">DC-15A Blaster</h4>
+                                <p className="text-xs text-zinc-500 line-clamp-2">Standard issue rifle now available for all recruits.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Structural HUD Elements */}
