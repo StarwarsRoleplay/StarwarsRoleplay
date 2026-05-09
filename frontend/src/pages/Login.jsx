@@ -17,12 +17,11 @@ export default function Login() {
 
         if (code) {
             setLoading(true);
-            // Send code to backend
             fetch('https://swrp.thatzane.workers.dev/api/v1/auth/callback?code=' + code)
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
-                        setError(data.error);
+                        setError(data.error + (data.details ? `: ${JSON.stringify(data.details)}` : ''));
                     } else {
                         // Save token and user
                         localStorage.setItem('swrp_token', data.token);
