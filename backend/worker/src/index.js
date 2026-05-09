@@ -695,6 +695,80 @@ export default {
             }
         }
     }
+
+    // Lore Upload
+    if (url.pathname === '/api/v1/lore/upload') {
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {
+                headers: getCorsHeaders(request)
+            });
+        }
+
+        const authHeader = request.headers.get('Authorization');
+        let user = null;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
+        }
+
+        if (request.method === 'POST') {
+            if (!user) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+            }
+
+            const isAdmin = await isUserAdmin(user.id, env);
+            const permissions = await getUserPermissions(user.id, env);
+            const canWrite = isAdmin || (permissions && permissions.pages && permissions.pages.lore && permissions.pages.lore.includes('write'));
+            
+            if (!canWrite) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+            }
+
+            const formData = await request.formData();
+            const file = formData.get('file');
+
+            if (!file) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'No file uploaded' }), { status: 400, headers });
+            }
+
+            const webhookUrl = env.UPLOAD_WEBHOOK_URL;
+            if (!webhookUrl) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Upload webhook not configured on server' }), { status: 500, headers });
+            }
+
+            const discordFormData = new FormData();
+            discordFormData.append('file', file);
+
+            try {
+                const discordRes = await fetch(webhookUrl + '?wait=true', {
+                    method: 'POST',
+                    body: discordFormData
+                });
+                const data = await discordRes.json();
+                
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                
+                if (data.attachments && data.attachments[0]) {
+                    return new Response(JSON.stringify({ success: true, url: data.attachments[0].url }), { headers });
+                } else {
+                    return new Response(JSON.stringify({ error: 'Failed to get attachment URL from Discord' }), { status: 500, headers });
+                }
+            } catch (error) {
+                const headers = getCorsHeaders(request);
+                headers.set('Content-Type', 'application/json');
+                return new Response(JSON.stringify({ error: 'Failed to upload to Discord', message: error.message }), { status: 500, headers });
+            }
+        }
+    }
   },
 };
 

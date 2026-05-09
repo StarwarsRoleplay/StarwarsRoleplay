@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Book, FileText, Globe, Shield, ArrowLeft } from 'lucide-react';
+import { Canvas } from '@react-three/fiber';
+import { useGLTF, OrbitControls } from '@react-three/drei';
+
+function HolocronModel({ onSelect }) {
+    const { scene } = useGLTF('/images/3d/jedi_holocron.glb');
+    return (
+        <primitive 
+            object={scene} 
+            scale={2}
+            onClick={() => onSelect('history')}
+            className="cursor-pointer"
+        />
+    );
+}
 
 export default function Lore() {
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -194,15 +208,14 @@ export default function Lore() {
             ) : (
                 <>
                     {/* 3D Holocron */}
-                    <div className="holocron-container my-8">
-                        <div className="holocron">
-                            <div className="holocron-face front" onClick={() => setSelectedCategory('history')}>History</div>
-                            <div className="holocron-face back" onClick={() => setSelectedCategory('custom')}>Custom</div>
-                            <div className="holocron-face right" onClick={() => setSelectedCategory('factions')}>Factions</div>
-                            <div className="holocron-face left" onClick={() => setSelectedCategory('operations')}>Operations</div>
-                            <div className="holocron-face top">Core</div>
-                            <div className="holocron-face bottom">Access</div>
-                        </div>
+                    <div className="w-full h-[300px] my-8 bg-[#0a0a0a] border border-zinc-800">
+                        <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+                            <ambientLight intensity={0.7} />
+                            <pointLight position={[10, 10, 10]} intensity={1.5} />
+                            <pointLight position={[-10, -10, -10]} intensity={1} color="#8b1919" />
+                            <HolocronModel onSelect={setSelectedCategory} />
+                            <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={4} />
+                        </Canvas>
                     </div>
 
                     {/* Categories */}

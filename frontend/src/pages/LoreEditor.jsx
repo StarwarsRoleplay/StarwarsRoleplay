@@ -168,26 +168,19 @@ export default function LoreEditor() {
         const formData = new FormData();
         formData.append('file', file);
 
-        // Discord Webhook URL (Placeholder)
-        const webhookUrl = 'YOUR_DISCORD_WEBHOOK_URL_HERE'; 
-
-        if (webhookUrl === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
-            alert('Please configure the Discord Webhook URL in LoreEditor.jsx!');
-            setLoading(false);
-            return;
-        }
-
-        fetch(webhookUrl + '?wait=true', {
+        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/upload', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: formData
         })
         .then(res => res.json())
         .then(data => {
-            if (data.attachments && data.attachments[0]) {
-                const url = data.attachments[0].url;
-                insertText(`![image](${url})`);
+            if (data.success && data.url) {
+                insertText(`![image](${data.url})`);
             } else {
-                alert('Failed to get attachment URL from Discord');
+                alert('Upload failed: ' + (data.error || 'Unknown error'));
             }
         })
         .catch(err => alert('Upload failed: ' + err.message))
