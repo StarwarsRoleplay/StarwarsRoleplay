@@ -7,7 +7,7 @@ export default function Hangar() {
         <section className="relative w-full h-[85vh] flex items-center bg-venator border-b border-white/10">
             <div className="w-full max-w-[1440px] mx-auto px-6 md:px-16 relative z-10 grid grid-cols-12 gap-6">
                 <div className="col-span-12 md:col-span-8 flex flex-col gap-8">
-                    <h1 className="text-5xl md:text-[100px] lg:text-[120px] text-white font-black uppercase tracking-[-0.04em] leading-[0.9]">
+                    <h1 className="text-4xl sm:text-5xl md:text-[100px] lg:text-[120px] text-white font-black uppercase tracking-[-0.04em] leading-[0.9]">
                         STAR WARS<br />
                         ROLEPLAY
                     </h1>
@@ -21,7 +21,7 @@ export default function Hangar() {
                             href={GAME_LINK}
                             target="_blank"
                             rel="noreferrer"
-                            className="bg-white text-[#0A0A0A] font-mono text-[12px] font-medium px-8 py-4 uppercase tracking-[0.15em] hover:bg-[#8b1919] hover:text-white transition-all duration-300 w-fit flex items-center gap-2 group"
+                            className="bg-white text-[#0A0A0A] font-mono text-[12px] font-medium px-8 py-4 uppercase tracking-[0.15em] hover:bg-[#8b1919] hover:text-white transition-all duration-300 w-fit flex items-center gap-2 group justify-center"
                         >
                             Deploy Now
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
