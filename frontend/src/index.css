@@ -6,7 +6,7 @@
 
 .bg-venator {
   background-image: linear-gradient(to bottom, rgba(10, 10, 10, 0.4), #0A0A0A), url('/images/components/hero.png');
-  background-size: cover;
+  background-size: 100% 100%, cover;
   background-position: center;
 }
 
