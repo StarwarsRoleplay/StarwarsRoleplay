@@ -12,8 +12,11 @@
 // ── CSP ──────────────────────────────────────────────────────────────────────
 //
 // Sources identified by static analysis of the repo (2026-05-11):
-//   Scripts : self only — Vite production build outputs hashed external .js files,
-//             no inline scripts in dist/index.html
+//   Scripts : self + hash for login/index.html inline redirect script.
+//             Vite production build outputs hashed external .js files (no inline
+//             scripts), but frontend/public/login/index.html contains one inline
+//             <script> that reads the OAuth code param and redirects to the hash
+//             route. Hash captured from browser CSP violation report.
 //   Styles  : self + unsafe-inline — React components use inline style props
 //             (e.g. style={{ clipPath: '...' }}) which require unsafe-inline
 //   Fonts   : self — no Google Fonts or external font CDN in use
@@ -24,7 +27,8 @@
 //
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self'",
+  // Hash covers the inline redirect script in frontend/public/login/index.html
+  "script-src 'self' 'sha256-3C5MTRlga9ZFCZnZZBnplHXNWMnA4MrjRFoYlBBzMnU='",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
   "img-src 'self' data:",
