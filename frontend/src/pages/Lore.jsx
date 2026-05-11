@@ -35,7 +35,7 @@ export default function Lore() {
             .replace(/\*(.*)\*/gim, '<em>$1</em>')
             .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" class="text-[#8b1919] hover:underline" target="_blank">$1</a>')
             .replace(/^- (.*$)/gim, '<li class="ml-4 text-zinc-300">$1</li>')
-            .replace(/\[redact\](.*?)\[\/redact\]/gim, '<span class="bg-black text-black hover:text-[#8b1919] transition-colors px-1 cursor-help" title="Redacted by Imperial Order">$1</span>')
+            .replace(/\[redact\](.*?)\[\/redact\]/gim, '<span class="bg-black text-black hover:text-[#8b1919] transition-colors px-1 cursor-help" title="Redacted by Galactic Republic">$1</span>')
             .replace(/\n/gim, '<br />');
         return html;
     };

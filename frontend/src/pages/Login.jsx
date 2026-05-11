@@ -70,7 +70,7 @@ export default function Login() {
 
                 <div className="flex flex-col gap-1 text-center">
                     <div className="font-mono text-[10px] text-[#8b1919] uppercase tracking-[0.15em]">
-                        Imperial Database
+                        Galactic Database
                     </div>
                     <h2 className="text-2xl text-white font-bold uppercase tracking-wide">
                         Terminal Access

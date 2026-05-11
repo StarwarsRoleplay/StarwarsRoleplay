@@ -197,7 +197,7 @@ export default function LoreEditor() {
             .replace(/\*(.*)\*/gim, '<em>$1</em>')
             .replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" class="text-[#8b1919] hover:underline" target="_blank">$1</a>')
             .replace(/^- (.*$)/gim, '<li class="ml-4 text-zinc-300">$1</li>')
-            .replace(/\[redact\](.*?)\[\/redact\]/gim, '<span class="bg-black text-black hover:text-[#8b1919] transition-colors px-1 cursor-help" title="Redacted by Imperial Order">$1</span>')
+            .replace(/\[redact\](.*?)\[\/redact\]/gim, '<span class="bg-black text-black hover:text-[#8b1919] transition-colors px-1 cursor-help" title="Redacted by Galactic Republic">$1</span>')
             .replace(/\n/gim, '<br />');
         return html;
     };
@@ -208,7 +208,7 @@ export default function LoreEditor() {
         <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-12 bg-[#050505]">
             <div className="flex flex-col gap-2">
                 <div className="font-mono text-[10px] text-[#8b1919] uppercase tracking-[0.15em]">
-                    Imperial Archives
+                    Galactic Archives
                 </div>
                 <h1 className="text-4xl text-white font-black uppercase tracking-tight">
                     Lore Editor

@@ -232,7 +232,7 @@ export default function UserManagement() {
         <section className="w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-12 bg-[#050505]">
             <div className="flex flex-col gap-2">
                 <div className="font-mono text-[10px] text-[#8b1919] uppercase tracking-[0.15em]">
-                    Imperial Archives
+                    Galactic Archives
                 </div>
                 <h1 className="text-4xl text-white font-black uppercase tracking-tight">
                     Lore Admin
