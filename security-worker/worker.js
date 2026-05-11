@@ -11,17 +11,18 @@
 
 // ── CSP ──────────────────────────────────────────────────────────────────────
 //
-// Sources identified by static analysis of the repo (2026-05-11):
+// Sources identified by static analysis + live CSP violation reports:
 //   Scripts : self + hash for login/index.html inline redirect script.
 //             Vite production build outputs hashed external .js files (no inline
 //             scripts), but frontend/public/login/index.html contains one inline
 //             <script> that reads the OAuth code param and redirects to the hash
 //             route. Hash captured from browser CSP violation report.
-//   Styles  : self + unsafe-inline — React components use inline style props
-//             (e.g. style={{ clipPath: '...' }}) which require unsafe-inline
-//   Fonts   : self — no Google Fonts or external font CDN in use
-//   Images  : self, data: — local assets only; avatars are proxied through the
-//             swrp.thatzane.workers.dev API worker
+//   Styles  : self, unsafe-inline (React inline style props e.g. clipPath),
+//             fonts.googleapis.com (Inter + JetBrains Mono loaded via @import)
+//   Fonts   : self, fonts.gstatic.com (actual font files served by Google)
+//   Images  : self, data:, *.rbxcdn.com — avatar headshots are fetched directly
+//             from tr.rbxcdn.com (the proxy returns a redirect to the CDN URL,
+//             so the browser loads the image from rbxcdn.com directly)
 //   Connect : self (swrp.me), swrp.thatzane.workers.dev (API calls from React),
 //             apis.roblox.com (Roblox OAuth), www.roblox.com (profile/group links)
 //
@@ -29,9 +30,9 @@ const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   // Hash covers the inline redirect script in frontend/public/login/index.html
   "script-src 'self' 'sha256-3C5MTRlga9ZFCZnZZBnplHXNWMnA4MrjRFoYlBBzMnU='",
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self'",
-  "img-src 'self' data:",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: https://tr.rbxcdn.com https://*.rbxcdn.com",
   "connect-src 'self' https://swrp.thatzane.workers.dev https://apis.roblox.com https://www.roblox.com",
   "frame-src 'none'",
   "frame-ancestors 'none'",
