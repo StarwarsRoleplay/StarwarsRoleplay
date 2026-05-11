@@ -88,9 +88,17 @@ export default function Hangar() {
 
                             <div className="flex flex-col gap-2">
                                 <div className="aspect-video bg-[#202020] overflow-hidden relative">
-                                    <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
-                                        {items[activeIndex].image}
-                                    </div>
+                                    {items[activeIndex].image?.startsWith('http') ? (
+                                        <img
+                                            src={items[activeIndex].image}
+                                            alt={items[activeIndex].title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-[#303030] flex items-center justify-center text-zinc-700 font-mono text-xs">
+                                            {items[activeIndex].image || '[ IMAGE ]'}
+                                        </div>
+                                    )}
                                     <div className="absolute top-2 left-2 bg-[#8b1919] text-white font-mono text-[10px] px-2 py-1">
                                         {items[activeIndex].type}
                                     </div>
