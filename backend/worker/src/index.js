@@ -771,6 +771,83 @@ export default {
         }
     }
 
+    // Recommended Image Upload (GitHub)
+    if (url.pathname === '/api/v1/recommended/upload') {
+        if (request.method === 'OPTIONS') {
+            return new Response(null, { headers: getCorsHeaders(request) });
+        }
+
+        if (request.method === 'POST') {
+            const authHeader = request.headers.get('Authorization');
+            let user = null;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const token = authHeader.split(' ')[1];
+                user = await verifyUserSession(token, env.ROBLOX_AUTH_SECRET);
+            }
+
+            const headers = getCorsHeaders(request);
+            headers.set('Content-Type', 'application/json');
+
+            if (!user) {
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
+            }
+
+            const isAdmin = await isUserAdmin(user.id, env);
+            if (!isAdmin) {
+                return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers });
+            }
+
+            if (!env.GIT_TOKEN) {
+                return new Response(JSON.stringify({ error: 'GIT_TOKEN not configured on server' }), { status: 500, headers });
+            }
+
+            const formData = await request.formData();
+            const file = formData.get('file');
+
+            if (!file) {
+                return new Response(JSON.stringify({ error: 'No file provided' }), { status: 400, headers });
+            }
+
+            // Convert file to base64
+            const arrayBuffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const fileName = `${Date.now()}-${safeName}`;
+            const filePath = `frontend/public/images/${fileName}`;
+            const REPO = 'StarwarsRoleplay/StarwarsRoleplay';
+            const BRANCH = 'main';
+
+            const githubRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${env.GIT_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'SWRP-Worker'
+                },
+                body: JSON.stringify({
+                    message: `Upload recommended image: ${fileName}`,
+                    content: base64,
+                    branch: BRANCH
+                })
+            });
+
+            if (!githubRes.ok) {
+                const err = await githubRes.json();
+                return new Response(JSON.stringify({ error: err.message || 'GitHub upload failed' }), { status: 500, headers });
+            }
+
+            const cdnUrl = `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${filePath}`;
+            return new Response(JSON.stringify({ success: true, url: cdnUrl }), { headers });
+        }
+    }
+
     // Lore Upload
     if (url.pathname === '/api/v1/lore/upload') {
         if (request.method === 'OPTIONS') {
