@@ -24,6 +24,7 @@ export default function Navigation() {
                 <Link className={isActive('/staff')} to="/staff">Staff</Link>
                 <Link className={isActive('/rules')} to="/rules">Rules</Link>
                 <Link className={isActive('/holonet')} to="/holonet">Holonet</Link>
+                <Link className={isActive('/appeal')} to="/appeal">Appeal</Link>
             </nav>
 
             {/* Mobile Navigation Button */}
@@ -44,6 +45,7 @@ export default function Navigation() {
                         <Link className={isMobileActive('/staff')} to="/staff" onClick={() => setIsOpen(false)}>Staff</Link>
                         <Link className={isMobileActive('/rules')} to="/rules" onClick={() => setIsOpen(false)}>Rules</Link>
                         <Link className={isMobileActive('/holonet')} to="/holonet" onClick={() => setIsOpen(false)}>Holonet</Link>
+                        <Link className={isMobileActive('/appeal')} to="/appeal" onClick={() => setIsOpen(false)}>Appeal</Link>
                     </nav>
                 </div>
             )}

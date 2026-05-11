@@ -1,0 +1,15 @@
+name            = "swrp-security"
+main            = "worker.js"
+compatibility_date = "2024-09-23"
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+# Catches all swrp.me traffic and injects security headers before serving
+# the GitHub Pages (starwarsroleplay.github.io) response.
+# API traffic goes directly to swrp.thatzane.workers.dev (separate domain),
+# so there are no route conflicts to manage here.
+[[routes]]
+pattern   = "swrp.me/*"
+zone_name = "swrp.me"
+
+# ── No bindings needed ────────────────────────────────────────────────────────
+# This worker only transforms headers; it does not use D1, KV, or secrets.
