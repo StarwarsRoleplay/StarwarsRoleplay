@@ -808,9 +808,28 @@ export default {
                 return new Response(JSON.stringify({ error: 'No file provided' }), { status: 400, headers });
             }
 
+            // File size limit: 5 MB
+            if (file.size > 5 * 1024 * 1024) {
+                return new Response(JSON.stringify({ error: 'File too large (max 5 MB)' }), { status: 400, headers });
+            }
+
             // Convert file to base64
             const arrayBuffer = await file.arrayBuffer();
             const bytes = new Uint8Array(arrayBuffer);
+
+            // Validate magic bytes — must be JPEG, PNG, GIF, or WebP (no SVG / polyglots)
+            const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!ALLOWED_MIME.includes(file.type)) {
+                return new Response(JSON.stringify({ error: 'Only JPEG, PNG, GIF and WebP images are allowed' }), { status: 400, headers });
+            }
+            const isJpeg = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+            const isPng  = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+            const isGif  = bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38;
+            const isWebp = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46
+                        && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+            if (!isJpeg && !isPng && !isGif && !isWebp) {
+                return new Response(JSON.stringify({ error: 'File content does not match a valid image format' }), { status: 400, headers });
+            }
             let binary = '';
             for (let i = 0; i < bytes.byteLength; i++) {
                 binary += String.fromCharCode(bytes[i]);

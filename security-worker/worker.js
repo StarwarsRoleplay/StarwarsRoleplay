@@ -32,7 +32,7 @@ const CONTENT_SECURITY_POLICY = [
   "script-src 'self' 'sha256-3C5MTRlga9ZFCZnZZBnplHXNWMnA4MrjRFoYlBBzMnU='",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: https://tr.rbxcdn.com https://*.rbxcdn.com https://cdn.jsdelivr.net",
+  "img-src 'self' data: https://tr.rbxcdn.com https://*.rbxcdn.com https://cdn.jsdelivr.net https://raw.githubusercontent.com https://cdn.discordapp.com https://media.discordapp.net",
   "connect-src 'self' https://swrp.thatzane.workers.dev https://apis.roblox.com https://www.roblox.com",
   "frame-src 'none'",
   "frame-ancestors 'none'",

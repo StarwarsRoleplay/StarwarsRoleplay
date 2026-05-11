@@ -254,14 +254,44 @@ export default function RecommendedAdmin() {
     );
 }
 
+const ALLOWED_IMAGE_HOSTS = [
+    'raw.githubusercontent.com',
+    'cdn.jsdelivr.net',
+    'cdn.discordapp.com',
+    'media.discordapp.net',
+];
+
+function isAllowedImageUrl(url) {
+    if (!url) return true; // empty is fine (not yet filled)
+    try {
+        const { protocol, hostname } = new URL(url);
+        return protocol === 'https:' && ALLOWED_IMAGE_HOSTS.includes(hostname);
+    } catch {
+        return false;
+    }
+}
+
 function ImageField({ value, onChange, onUpload, uploading }) {
     const fileInputRef = React.useRef(null);
+    const [urlError, setUrlError] = React.useState('');
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) onUpload(file);
         e.target.value = '';
     };
+
+    const handleUrlChange = (e) => {
+        const v = e.target.value;
+        onChange(v);
+        if (v && !isAllowedImageUrl(v)) {
+            setUrlError('Only images from raw.githubusercontent.com, cdn.jsdelivr.net, cdn.discordapp.com or media.discordapp.net are allowed.');
+        } else {
+            setUrlError('');
+        }
+    };
+
+    const urlValid = isAllowedImageUrl(value);
 
     return (
         <div className="flex flex-col gap-1">
@@ -270,14 +300,14 @@ function ImageField({ value, onChange, onUpload, uploading }) {
                 <input
                     type="text"
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder="URL or upload an image →"
-                    className="flex-1 bg-[#151515] border border-white/5 text-white p-2 font-mono text-sm"
+                    onChange={handleUrlChange}
+                    placeholder="Paste a GitHub / Discord image URL, or upload →"
+                    className={`flex-1 bg-[#151515] border text-white p-2 font-mono text-sm ${urlError ? 'border-red-500/60' : 'border-white/5'}`}
                 />
                 <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
                     onChange={handleFileChange}
                     className="hidden"
                 />
@@ -290,7 +320,10 @@ function ImageField({ value, onChange, onUpload, uploading }) {
                     {uploading ? 'Uploading...' : 'Upload Image'}
                 </button>
             </div>
-            {value && value.startsWith('http') && (
+            {urlError && (
+                <p className="text-red-400 text-[10px] font-mono">{urlError}</p>
+            )}
+            {value && urlValid && (
                 <img
                     src={value}
                     alt="preview"
