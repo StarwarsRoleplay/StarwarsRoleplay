@@ -1,3 +1,20 @@
+# Environment & secrets
 .env
+.env.*
+!.env.example
+
+# Wrangler local cache (may contain account tokens / OAuth state)
+.wrangler/
+*/.wrangler/
+
+# Claude Code local config
+.claude/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Misc
 /plan
-.claude
