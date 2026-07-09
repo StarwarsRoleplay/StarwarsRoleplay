@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import { API_BASE } from '../constants';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const CLIENT_ID = "4826975489404838124";
@@ -22,7 +23,7 @@ export default function Login() {
         const code = searchParams.get('code');
 
         if (code) {
-            fetch('https://swrp.thatzane.workers.dev/api/v1/auth/callback?code=' + code)
+            fetch(`${API_BASE}/api/v1/auth/callback?code=` + code)
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {

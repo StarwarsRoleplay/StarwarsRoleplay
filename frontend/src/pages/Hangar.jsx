@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { GAME_LINK, GROUP_LINK } from '../constants';
+import { GAME_LINK, GROUP_LINK, API_BASE } from '../constants';
 
 export default function Hangar() {
     const [items, setItems] = useState([]);
@@ -8,7 +8,7 @@ export default function Hangar() {
     const [activeIndex, setActiveIndex] = useState(0);
 
     useEffect(() => {
-        fetch('https://swrp.thatzane.workers.dev/api/v1/recommended')
+        fetch(`${API_BASE}/api/v1/recommended`)
             .then(res => res.json())
             .then(data => {
                 if (data) {

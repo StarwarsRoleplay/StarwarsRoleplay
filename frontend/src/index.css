@@ -11,7 +11,39 @@
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #0A0A0A; }
-::-webkit-scrollbar-thumb { background: #313030; }
+::-webkit-scrollbar-thumb { background: #313030; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #5d5f5f; }
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #313030 #0A0A0A;
+}
+
+/* Visible keyboard focus, consistent with the site accent */
+:focus-visible {
+  outline: 2px solid #8b1919;
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Smoother text rendering on dark backgrounds */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,3 +1,5 @@
+export const API_BASE = "https://swrp.thatzane.workers.dev";
+
 export const GAME_LINK = "https://www.roblox.com/games/127198433562944/Coruscant-Roleplay";
 export const GROUP_LINK = "https://www.roblox.com/communities/866453521/Star-Wars-Roleplay";
 export const DISCORD_LINK = "https://discord.gg/46nvXHe8Ax";

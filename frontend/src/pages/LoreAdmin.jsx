@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import { API_BASE } from '../constants';
 import { useNavigate } from 'react-router-dom';
 
 const RobloxAvatar = ({ userId, username }) => {
@@ -6,7 +7,7 @@ const RobloxAvatar = ({ userId, username }) => {
 
     useEffect(() => {
         if (!userId) return;
-        fetch(`https://swrp.thatzane.workers.dev/api/v1/proxy/avatar?userId=${userId}`)
+        fetch(`${API_BASE}/api/v1/proxy/avatar?userId=${userId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.data && data.data[0]) {
@@ -48,7 +49,7 @@ export default function UserManagement() {
     const token = localStorage.getItem('swrp_token');
 
     const fetchWriters = React.useCallback(() => {
-        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/writers', {
+        fetch(`${API_BASE}/api/v1/lore/writers`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -76,7 +77,7 @@ export default function UserManagement() {
     }, [token, navigate]);
 
     const fetchArticles = React.useCallback(() => {
-        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles?show_drafts=true', {
+        fetch(`${API_BASE}/api/v1/lore/articles?show_drafts=true`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -108,7 +109,7 @@ export default function UserManagement() {
     const handleDeleteArticle = (id) => {
         if (!window.confirm('Are you sure you want to delete this article?')) return;
         
-        fetch(`https://swrp.thatzane.workers.dev/api/v1/lore/articles?id=${id}`, {
+        fetch(`${API_BASE}/api/v1/lore/articles?id=${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -130,7 +131,7 @@ export default function UserManagement() {
         if (!newUsername) return;
 
         setActionLoading(true);
-        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/writers', {
+        fetch(`${API_BASE}/api/v1/lore/writers`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -163,7 +164,7 @@ export default function UserManagement() {
     const handleDeleteWriter = (id) => {
         if (!window.confirm('Are you sure you want to remove this user?')) return;
 
-        fetch(`https://swrp.thatzane.workers.dev/api/v1/lore/writers?id=${id}`, {
+        fetch(`${API_BASE}/api/v1/lore/writers?id=${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`

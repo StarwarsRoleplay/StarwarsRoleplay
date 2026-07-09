@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../constants';
 import { Book, FileText, Globe, Shield, ArrowLeft } from 'lucide-react';
 
 export default function Lore() {
@@ -18,7 +19,7 @@ export default function Lore() {
 
     useEffect(() => {
         if (!selectedCategory) return;
-        fetch(`https://swrp.thatzane.workers.dev/api/v1/lore/articles?category=${selectedCategory}`)
+        fetch(`${API_BASE}/api/v1/lore/articles?category=${selectedCategory}`)
             .then(res => res.json())
             .then(data => setArticles(data))
             .catch(e => console.error(e))

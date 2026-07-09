@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../constants';
 
 const RANK_ORDER = [
     'SWRP : Project Lead',
@@ -20,7 +21,7 @@ export default function Staff() {
         const fetchStaff = async () => {
             try {
                 // Fetch from Cloudflare Worker
-                const response = await fetch('https://swrp.thatzane.workers.dev/api/v1/staff');
+                const response = await fetch(`${API_BASE}/api/v1/staff`);
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch staff data');

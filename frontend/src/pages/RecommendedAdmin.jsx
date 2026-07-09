@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import { API_BASE } from '../constants';
 import { useNavigate } from 'react-router-dom';
 
 export default function RecommendedAdmin() {
@@ -20,7 +21,7 @@ export default function RecommendedAdmin() {
     const token = localStorage.getItem('swrp_token');
 
     const fetchItems = React.useCallback(() => {
-        fetch('https://swrp.thatzane.workers.dev/api/v1/recommended')
+        fetch(`${API_BASE}/api/v1/recommended`)
             .then(res => res.json())
             .then(data => setItems(data))
             .catch(err => setError(err.message))
@@ -43,7 +44,7 @@ export default function RecommendedAdmin() {
         formData.append('file', file);
 
         try {
-            const res = await fetch('https://swrp.thatzane.workers.dev/api/v1/recommended/upload', {
+            const res = await fetch(`${API_BASE}/api/v1/recommended/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -67,7 +68,7 @@ export default function RecommendedAdmin() {
 
     const handleSave = () => {
         setActionLoading(true);
-        fetch('https://swrp.thatzane.workers.dev/api/v1/recommended', {
+        fetch(`${API_BASE}/api/v1/recommended`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -301,7 +302,7 @@ function ImageField({ value, onChange, onUpload, uploading }) {
                     type="text"
                     value={value}
                     onChange={handleUrlChange}
-                    placeholder="Paste a GitHub / Discord image URL, or upload →"
+                    placeholder="Paste a GitHub / Discord image URL, or upload â†’"
                     className={`flex-1 bg-[#151515] border text-white p-2 font-mono text-sm ${urlError ? 'border-red-500/60' : 'border-white/5'}`}
                 />
                 <input

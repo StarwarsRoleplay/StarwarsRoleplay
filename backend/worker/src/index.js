@@ -1,5 +1,31 @@
-import { verifyTOTP, signSession, verifySession, hmacHex } from './utils/totp.js';
+import { verifyTOTP, signSession, verifySession, hmacHex, timingSafeEqualStr } from './utils/totp.js';
 import { renderDocs } from './utils/docs.js';
+
+/** Uniform JSON response with CORS + hardening headers. */
+function jsonResponse(request, data, status = 200, extraHeaders = {}) {
+    const headers = getCorsHeaders(request);
+    headers.set('Content-Type', 'application/json');
+    headers.set('X-Content-Type-Options', 'nosniff');
+    for (const [k, v] of Object.entries(extraHeaders)) headers.set(k, v);
+    return new Response(JSON.stringify(data), { status, headers });
+}
+
+// Best-effort in-memory rate limiter (per isolate). Slows down brute-force
+// attempts on the auth/docs endpoints without needing a KV binding.
+const RATE_BUCKETS = new Map();
+function isRateLimited(ip, key, limit, windowMs) {
+    const now = Date.now();
+    const bucketKey = `${key}:${ip}`;
+    let bucket = RATE_BUCKETS.get(bucketKey);
+    if (!bucket || now > bucket.reset) {
+        bucket = { count: 0, reset: now + windowMs };
+        RATE_BUCKETS.set(bucketKey, bucket);
+    }
+    bucket.count++;
+    // Cap memory: reset the map if it grows unbounded
+    if (RATE_BUCKETS.size > 10000) RATE_BUCKETS.clear();
+    return bucket.count > limit;
+}
 
 async function signUserSession(user, secret, ttlSeconds = 3600) {
     const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
@@ -10,21 +36,26 @@ async function signUserSession(user, secret, ttlSeconds = 3600) {
 }
 
 async function verifyUserSession(token, secret) {
-    const dot = token.indexOf('.');
-    if (dot === -1) return null;
-    
-    const encodedPayload = token.slice(0, dot);
-    const givenSig = token.slice(dot + 1);
-    
-    const payload = atob(encodedPayload);
-    const expectedSig = await hmacHex(secret, payload);
-    
-    if (expectedSig !== givenSig) return null;
-    
-    const data = JSON.parse(payload);
-    if (Math.floor(Date.now() / 1000) > data.expires) return null;
-    
-    return data.user;
+    try {
+        const dot = token.indexOf('.');
+        if (dot === -1) return null;
+
+        const encodedPayload = token.slice(0, dot);
+        const givenSig = token.slice(dot + 1);
+
+        const payload = atob(encodedPayload);
+        const expectedSig = await hmacHex(secret, payload);
+
+        if (!timingSafeEqualStr(expectedSig, givenSig)) return null;
+
+        const data = JSON.parse(payload);
+        if (Math.floor(Date.now() / 1000) > data.expires) return null;
+
+        return data.user;
+    } catch {
+        // Malformed token (bad base64 / JSON) — treat as unauthenticated
+        return null;
+    }
 }
 
 function getCorsHeaders(request) {
@@ -121,7 +152,14 @@ export default {
         const headers = getCorsHeaders(request);
         return new Response(null, { headers, status: 204 });
     }
-    
+
+    const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+
+    // Health check
+    if (url.pathname === '/api/v1/health') {
+        return jsonResponse(request, { status: 'ok', time: new Date().toISOString() });
+    }
+
     // Avatar Proxy Route
     if (url.pathname === '/api/v1/proxy/avatar') {
         const userId = url.searchParams.get('userId');
@@ -145,6 +183,10 @@ export default {
       }
       
       if (request.method === 'POST') {
+        // Max 10 code attempts per IP per 5 minutes
+        if (isRateLimited(clientIp, 'docs', 10, 5 * 60 * 1000)) {
+            return docsGateHTML('Zu viele Versuche – bitte später erneut versuchen.');
+        }
         const body = await request.text().catch(() => '');
         const code = new URLSearchParams(body).get('code') ?? '';
         if (!env.DOCS_TOTP_SECRET) return docsGateHTML('Server-Konfigurationsfehler.');
@@ -211,6 +253,11 @@ export default {
             return new Response(null, {
                 headers: getCorsHeaders(request)
             });
+        }
+
+        // Max 20 token exchanges per IP per minute
+        if (isRateLimited(clientIp, 'auth', 20, 60 * 1000)) {
+            return jsonResponse(request, { error: 'Too many requests' }, 429, { 'Retry-After': '60' });
         }
 
         const code = url.searchParams.get('code');
@@ -478,10 +525,7 @@ export default {
                     headers
                 });
             } catch (error) {
-                return new Response(JSON.stringify({ error: 'DB Error', message: error.message }), { 
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-                });
+                return jsonResponse(request, { error: 'DB Error', message: error.message }, 500);
             }
         }
     }
@@ -940,6 +984,10 @@ export default {
             }
         }
     }
+
+    // Fallback: unknown route or unsupported method. Without this, the worker
+    // would return undefined and throw an internal error.
+    return jsonResponse(request, { error: 'Not found' }, 404);
   },
 };
 

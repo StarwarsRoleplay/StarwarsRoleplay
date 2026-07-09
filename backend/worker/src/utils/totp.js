@@ -80,6 +80,16 @@ export async function verifyTOTP(secret, userCode) {
 // Cookie value format: "<expires_unix>.<hmac_hex>"
 // Signed with DOCS_TOTP_SECRET via HMAC-SHA-256.
 
+/** Constant-time string comparison to avoid timing side channels. */
+export function timingSafeEqualStr(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 export async function hmacHex(secret, message) {
   const key = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(secret),
@@ -111,7 +121,7 @@ export async function verifySession(secret, value) {
   if (isNaN(expires) || Math.floor(Date.now() / 1000) > expires) return null;
 
   const expectedSig = await hmacHex(secret, expiresStr);
-  if (expectedSig !== givenSig) return null;
+  if (!timingSafeEqualStr(expectedSig, givenSig)) return null;
 
   return expires;
 }

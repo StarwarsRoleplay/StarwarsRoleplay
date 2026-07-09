@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import {
     HashRouter as Router,
     Routes,
@@ -6,21 +6,36 @@ import {
     Link
 } from 'react-router-dom';
 import Navigation from './components/Navigation';
+import ErrorBoundary from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
 import Hangar from './pages/Hangar';
-import Divisions from './pages/Divisions';
-import Holonet from './pages/Holonet';
-import Privacy from './pages/Privacy';
-import Legal from './pages/Legal';
-import Terms from './pages/Terms';
-import Lore from './pages/Lore';
-import Staff from './pages/Staff';
-import Rules from './pages/Rules';
-import Login from './pages/Login';
-import LoreAdmin from './pages/LoreAdmin';
-import LoreEditor from './pages/LoreEditor';
-import RecommendedAdmin from './pages/RecommendedAdmin';
-import Appeal from './pages/Appeal';
-import { GAME_LINK } from './constants';
+import { GAME_LINK, API_BASE } from './constants';
+
+// Route-level code splitting — only the Hangar (landing page) ships in the main bundle.
+const Divisions = lazy(() => import('./pages/Divisions'));
+const Holonet = lazy(() => import('./pages/Holonet'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Legal = lazy(() => import('./pages/Legal'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Lore = lazy(() => import('./pages/Lore'));
+const Staff = lazy(() => import('./pages/Staff'));
+const Rules = lazy(() => import('./pages/Rules'));
+const Login = lazy(() => import('./pages/Login'));
+const LoreAdmin = lazy(() => import('./pages/LoreAdmin'));
+const LoreEditor = lazy(() => import('./pages/LoreEditor'));
+const RecommendedAdmin = lazy(() => import('./pages/RecommendedAdmin'));
+const Appeal = lazy(() => import('./pages/Appeal'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+function RouteFallback() {
+    return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+            <p className="font-mono text-[11px] text-zinc-500 uppercase tracking-[0.2em] animate-pulse">
+                Establishing Connection…
+            </p>
+        </div>
+    );
+}
 
 export default function App() {
     const [user] = React.useState(() => {
@@ -38,6 +53,7 @@ export default function App() {
     });
     const [avatarUrl, setAvatarUrl] = React.useState(null);
     const [dropdownOpen, setDropdownOpen] = React.useState(false);
+    const dropdownRef = React.useRef(null);
 
     React.useEffect(() => {
         // Check for OAuth code in URL (GitHub Pages fallback)
@@ -53,7 +69,7 @@ export default function App() {
 
         if (user) {
             // Fetch avatar via proxy to avoid CORS
-            fetch(`https://swrp.thatzane.workers.dev/api/v1/proxy/avatar?userId=${user.id}`)
+            fetch(`${API_BASE}/api/v1/proxy/avatar?userId=${user.id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.data && data.data[0]) {
@@ -64,24 +80,46 @@ export default function App() {
         }
     }, [user]);
 
+    // Close the account dropdown on outside click or Escape
+    React.useEffect(() => {
+        if (!dropdownOpen) return;
+        const onPointerDown = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setDropdownOpen(false);
+            }
+        };
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') setDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', onPointerDown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [dropdownOpen]);
+
     return (
         <Router>
+            <ScrollToTop />
             <div className="min-h-screen flex flex-col bg-[#0A0A0A] text-white selection:bg-[#8b1919] selection:text-white antialiased font-inter">
 
                 {/* TopNavBar */}
                 <header className="fixed top-0 w-full z-50 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/10">
                     <div className="flex justify-between items-center w-full px-6 md:px-16 h-20 max-w-[1440px] mx-auto">
-                        <div className="text-[32px] font-black tracking-tighter text-white">
+                        <Link to="/" className="text-[32px] font-black tracking-tighter text-white hover:text-[#c4c7c8] transition-colors" aria-label="SW:RP Home">
                             SW:RP
-                        </div>
+                        </Link>
 
                         <Navigation />
 
                         <div className="flex items-center gap-4">
                             {user ? (
-                                <div className="relative">
-                                    <button 
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
                                         onClick={() => setDropdownOpen(!dropdownOpen)}
+                                        aria-haspopup="menu"
+                                        aria-expanded={dropdownOpen}
                                         className="flex items-center gap-3 text-white font-mono text-[12px] uppercase tracking-[0.15em] hover:text-[#8b1919] transition-colors"
                                     >
                                         {avatarUrl ? (
@@ -102,26 +140,26 @@ export default function App() {
                                              clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)'
                                          }}
                                     >
-                                        <Link 
-                                            to="/lore-admin" 
+                                        <Link
+                                            to="/lore-admin"
                                             className="block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase"
                                             onClick={() => setDropdownOpen(false)}
                                         >
                                             Lore Admin
                                         </Link>
-                                        <Link 
-                                             to="/admin/recommended" 
+                                        <Link
+                                             to="/admin/recommended"
                                              className="block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900"
                                              onClick={() => setDropdownOpen(false)}
                                          >
                                              Recommended Admin
                                          </Link>
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 localStorage.removeItem('swrp_token');
                                                 window.location.reload();
                                             }}
-                                            className="w-full text-left block px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900 flex items-center gap-2"
+                                            className="w-full text-left px-4 py-3 text-xs text-white hover:bg-[#8b1919] font-mono uppercase border-t border-zinc-900 flex items-center gap-2"
                                         >
                                             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                                                 <path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 012 2v2h-2V4H5v16h9v-2h2v2a2 2 0 01-2 2H5a2 2 0 01-2-2V4a2 2 0 012-2h9z" />
@@ -151,22 +189,27 @@ export default function App() {
                 </header>
 
                 <main className="flex-grow pt-20">
-                    <Routes>
-                        <Route path="/" element={<Hangar />} />
-                        <Route path="/divisions" element={<Divisions />} />
-                        <Route path="/holonet" element={<Holonet />} />
-                        <Route path="/privacy" element={<Privacy />} />
-                        <Route path="/legal" element={<Legal />} />
-                        <Route path="/terms" element={<Terms />} />
-                        <Route path="/lore" element={<Lore />} />
-                        <Route path="/staff" element={<Staff />} />
-                        <Route path="/rules" element={<Rules />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/lore-admin" element={<LoreAdmin />} />
-                        <Route path="/lore-editor" element={<LoreEditor />} />
-                        <Route path="/admin/recommended" element={<RecommendedAdmin />} />
-                        <Route path="/appeal" element={<Appeal />} />
-                    </Routes>
+                    <ErrorBoundary>
+                        <Suspense fallback={<RouteFallback />}>
+                            <Routes>
+                                <Route path="/" element={<Hangar />} />
+                                <Route path="/divisions" element={<Divisions />} />
+                                <Route path="/holonet" element={<Holonet />} />
+                                <Route path="/privacy" element={<Privacy />} />
+                                <Route path="/legal" element={<Legal />} />
+                                <Route path="/terms" element={<Terms />} />
+                                <Route path="/lore" element={<Lore />} />
+                                <Route path="/staff" element={<Staff />} />
+                                <Route path="/rules" element={<Rules />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/lore-admin" element={<LoreAdmin />} />
+                                <Route path="/lore-editor" element={<LoreEditor />} />
+                                <Route path="/admin/recommended" element={<RecommendedAdmin />} />
+                                <Route path="/appeal" element={<Appeal />} />
+                                <Route path="*" element={<NotFound />} />
+                            </Routes>
+                        </Suspense>
+                    </ErrorBoundary>
                 </main>
 
                 {/* Footer */}

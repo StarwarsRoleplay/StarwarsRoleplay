@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../constants';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Bold, Italic, Heading1, Heading2, List, Link as LinkIcon, Eye, Edit2, Save, Shield, Image as ImageIcon } from 'lucide-react';
 
@@ -30,7 +31,7 @@ export default function LoreEditor() {
     // Load article if editing
     useEffect(() => {
         if (id) {
-            fetch(`https://swrp.thatzane.workers.dev/api/v1/lore/articles?id=${id}`)
+            fetch(`${API_BASE}/api/v1/lore/articles?id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data) {
@@ -63,7 +64,7 @@ export default function LoreEditor() {
                 };
                 if (targetId) body.id = targetId;
 
-                fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles', {
+                fetch(`${API_BASE}/api/v1/lore/articles`, {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
@@ -120,7 +121,7 @@ export default function LoreEditor() {
         };
         if (targetId) body.id = targetId;
 
-        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/articles', {
+        fetch(`${API_BASE}/api/v1/lore/articles`, {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
@@ -168,7 +169,7 @@ export default function LoreEditor() {
         const formData = new FormData();
         formData.append('file', file);
 
-        fetch('https://swrp.thatzane.workers.dev/api/v1/lore/upload', {
+        fetch(`${API_BASE}/api/v1/lore/upload`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
