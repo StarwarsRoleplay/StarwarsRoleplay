@@ -1,0 +1,49 @@
+import{i as e,n as t,t as n}from"./jsx-runtime-BHwPObl3.js";import{t as r}from"./createLucideIcon-Bx4O1Xry.js";import{t as i}from"./shield-Bt3xP1I4.js";import{t as a}from"./index-CNc_NouW.js";var o=r(`arrow-left`,[[`path`,{d:`m12 19-7-7 7-7`,key:`1l729n`}],[`path`,{d:`M19 12H5`,key:`x3x0zl`}]]),s=r(`book`,[[`path`,{d:`M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20`,key:`k3hazp`}]]),c=r(`file-text`,[[`path`,{d:`M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z`,key:`1oefj6`}],[`path`,{d:`M14 2v5a1 1 0 0 0 1 1h5`,key:`wfsgrz`}],[`path`,{d:`M10 9H8`,key:`b1mrlr`}],[`path`,{d:`M16 13H8`,key:`t4e002`}],[`path`,{d:`M16 17H8`,key:`z1uh3a`}]]),l=r(`globe`,[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20`,key:`13o1zl`}],[`path`,{d:`M2 12h20`,key:`9i4pu4`}]]),u=e(t(),1),d=n();function f(){let[e,t]=(0,u.useState)(null),[n,r]=(0,u.useState)([]),[f,p]=(0,u.useState)(!0),[m,h]=(0,u.useState)(null),[g,_]=(0,u.useState)(``),[v,y]=(0,u.useState)(null),b=[{id:`history`,name:`Galactic History`,icon:s,desc:`Explore the overarching history of the galaxy.`},{id:`custom`,name:`Custom Lore`,icon:l,desc:`Read about the custom events and stories.`},{id:`factions`,name:`Faction Records`,icon:i,desc:`Detailed records of the grand army divisions.`},{id:`operations`,name:`Operations Archive`,icon:c,desc:`Logs of past operations and campaigns.`}];(0,u.useEffect)(()=>{e&&fetch(`${a}/api/v1/lore/articles?category=${e}`).then(e=>e.json()).then(e=>r(e)).catch(e=>console.error(e)).finally(()=>p(!1))},[e]);let x=e=>e?e.replace(/^### (.*$)/gim,`<h3 class="text-white font-bold text-lg mt-4 mb-2">$1</h3>`).replace(/^## (.*$)/gim,`<h2 class="text-white font-bold text-xl mt-4 mb-2">$1</h2>`).replace(/^# (.*$)/gim,`<h1 class="text-white font-bold text-2xl mt-4 mb-2">$1</h1>`).replace(/\*\*(.*)\*\*/gim,`<strong>$1</strong>`).replace(/\*(.*)\*/gim,`<em>$1</em>`).replace(/\[(.*?)\]\((.*?)\)/gim,`<a href="$2" class="text-[#8b1919] hover:underline" target="_blank">$1</a>`).replace(/^- (.*$)/gim,`<li class="ml-4 text-zinc-300">$1</li>`).replace(/\[redact\](.*?)\[\/redact\]/gim,`<span class="bg-black text-black hover:text-[#8b1919] transition-colors px-1 cursor-help" title="Redacted by Galactic Republic">$1</span>`).replace(/\n/gim,`<br />`):``,S=n.filter(e=>{let t=e.title.toLowerCase().includes(g.toLowerCase())||e.content.toLowerCase().includes(g.toLowerCase()),n=!v||e.tags&&e.tags.split(`,`).map(e=>e.trim()).includes(v);return t&&n});return(0,d.jsxs)(`section`,{className:`w-full max-w-[1440px] mx-auto px-6 md:px-16 py-32 flex flex-col gap-12 bg-[#050505]`,children:[(0,d.jsx)(`style`,{children:`
+                .holocron-container {
+                    perspective: 1000px;
+                    width: 200px;
+                    height: 200px;
+                    margin: 0 auto;
+                }
+                .holocron {
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+                    transform-style: preserve-3d;
+                    animation: rotate 20s linear infinite;
+                }
+                .holocron-face {
+                    position: absolute;
+                    width: 200px;
+                    height: 200px;
+                    background: rgba(139, 25, 25, 0.1);
+                    border: 2px solid #8b1919;
+                    box-shadow: 0 0 30px rgba(139, 25, 25, 0.5), inset 0 0 30px rgba(139, 25, 25, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: monospace;
+                    font-size: 10px;
+                    color: #fff;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    transition: background 0.3s;
+                }
+                .holocron-face:hover {
+                    background: rgba(139, 25, 25, 0.3);
+                }
+                    letter-spacing: 2px;
+                    backface-visibility: hidden;
+                }
+                .front  { transform: translateZ(100px); }
+                .back   { transform: rotateY(180deg) translateZ(100px); }
+                .right  { transform: rotateY(90deg) translateZ(100px); }
+                .left   { transform: rotateY(-90deg) translateZ(100px); }
+                .top    { transform: rotateX(90deg) translateZ(100px); }
+                .bottom { transform: rotateX(-90deg) translateZ(100px); }
+
+                @keyframes rotate {
+                    from { transform: rotateX(0) rotateY(0); }
+                    to { transform: rotateX(360deg) rotateY(360deg); }
+                }
+            `}),(0,d.jsxs)(`div`,{className:`flex flex-col gap-2 border-l-4 border-white pl-6`,children:[(0,d.jsxs)(`div`,{className:`font-mono text-[10px] font-medium text-[#8b1919] uppercase tracking-[0.15em] mb-2 flex items-center gap-2`,children:[(0,d.jsx)(`span`,{className:`w-2 h-2 bg-[#8b1919]`}),`RECORDS & ARCHIVES`]}),(0,d.jsx)(`h2`,{className:`text-[32px] text-white font-bold uppercase leading-tight`,children:`Galactic Archives`}),(0,d.jsx)(`span`,{className:`font-mono text-[12px] font-medium text-[#c4c7c8] uppercase tracking-[0.15em]`,children:`Access restricted lore and historical files.`})]}),m?(0,d.jsxs)(`div`,{className:`flex flex-col gap-6 bg-[#0a0a0a] border border-zinc-800 p-8`,children:[(0,d.jsxs)(`button`,{onClick:()=>h(null),className:`flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-xs uppercase transition-colors self-start`,children:[(0,d.jsx)(o,{size:14}),` Back to List`]}),(0,d.jsxs)(`div`,{className:`flex flex-col gap-2 border-b border-zinc-800 pb-4`,children:[(0,d.jsx)(`h1`,{className:`text-3xl text-white font-black uppercase`,children:m.title}),(0,d.jsxs)(`p`,{className:`text-zinc-500 text-xs font-mono`,children:[`Author: `,m.author_name,` | Published: `,new Date(m.created_at*1e3).toLocaleDateString()]})]}),(0,d.jsx)(`div`,{className:`text-zinc-300 text-sm font-inter leading-relaxed`,dangerouslySetInnerHTML:{__html:x(m.content)}})]}):e?(0,d.jsxs)(`div`,{className:`flex flex-col gap-6`,children:[(0,d.jsxs)(`button`,{onClick:()=>{t(null),_(``),y(null)},className:`flex items-center gap-2 text-zinc-500 hover:text-white font-mono text-xs uppercase transition-colors self-start`,children:[(0,d.jsx)(o,{size:14}),` Back to Categories`]}),(0,d.jsxs)(`h3`,{className:`text-2xl text-white font-bold uppercase`,children:[`Articles in `,b.find(t=>t.id===e)?.name]}),(0,d.jsxs)(`div`,{className:`flex flex-col gap-4`,children:[(0,d.jsx)(`input`,{type:`text`,placeholder:`Search articles...`,value:g,onChange:e=>_(e.target.value),className:`w-full bg-[#0a0a0a] border border-zinc-800 p-3 text-white font-mono text-sm focus:border-[#8b1919] focus:outline-none transition-colors`}),n.length>0&&(0,d.jsx)(`div`,{className:`flex flex-wrap gap-2`,children:[...new Set(n.flatMap(e=>e.tags?e.tags.split(`,`).map(e=>e.trim()):[]))].filter(Boolean).map(e=>(0,d.jsx)(`button`,{onClick:()=>y(v===e?null:e),className:`px-2 py-1 font-mono text-xs uppercase border transition-colors ${v===e?`bg-[#8b1919] border-[#8b1919] text-white`:`bg-[#0a0a0a] border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white`}`,children:e},e))})]}),f?(0,d.jsx)(`div`,{className:`text-zinc-500 font-mono`,children:`Loading articles...`}):S.length===0?(0,d.jsx)(`div`,{className:`text-zinc-600 font-mono`,children:`No articles match your search or filters.`}):(0,d.jsx)(`div`,{className:`grid grid-cols-1 gap-4`,children:S.map(e=>(0,d.jsxs)(`div`,{className:`bg-[#0a0a0a] border border-zinc-800 p-6 hover:border-[#8b1919] transition-colors cursor-pointer`,onClick:()=>h(e),children:[(0,d.jsx)(`h4`,{className:`text-lg text-white font-bold uppercase`,children:e.title}),(0,d.jsxs)(`p`,{className:`text-zinc-500 text-sm mt-1`,children:[`By `,e.author_name,` | `,new Date(e.created_at*1e3).toLocaleDateString()]})]},e.id))})]}):(0,d.jsx)(d.Fragment,{children:(0,d.jsx)(`div`,{className:`grid grid-cols-1 md:grid-cols-2 gap-8`,children:b.map(e=>{let n=e.icon;return(0,d.jsxs)(`div`,{className:`bg-[#121212] border border-white/10 p-8 flex flex-col gap-6 hover:border-[#8b1919]/50 transition-all cursor-pointer group relative`,onClick:()=>{t(e.id),p(!0)},children:[(0,d.jsx)(`div`,{className:`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white opacity-0 group-hover:opacity-100 transition-opacity m-2`}),(0,d.jsx)(`div`,{className:`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white opacity-0 group-hover:opacity-100 transition-opacity m-2`}),(0,d.jsx)(`div`,{className:`text-[#8b1919]`,children:(0,d.jsx)(n,{className:`w-10 h-10`})}),(0,d.jsxs)(`div`,{children:[(0,d.jsx)(`h3`,{className:`text-xl text-white font-bold uppercase mb-2 group-hover:text-[#8b1919] transition-colors`,children:e.name}),(0,d.jsx)(`p`,{className:`font-mono text-[14px] text-[#c4c7c8] leading-[20px]`,children:e.desc})]})]},e.id)})})})]})}export{f as default};
